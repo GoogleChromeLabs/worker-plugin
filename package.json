@@ -1,0 +1,81 @@
+{
+  "name": "worker-plugin",
+  "version": "1.0.0",
+  "description": "Webpack plugin to bundle Workers automagically.",
+  "main": "dist/worker-plugin.js",
+  "repository": "GoogleChromeLabs/worker-plugin",
+  "scripts": {
+    "build": "microbundle --inline none --format cjs --no-compress src/*.js",
+    "prepublishOnly": "npm run build",
+    "dev": "jest --verbose --watchAll",
+    "test": "npm run build && jest --verbose",
+    "release": "npm t && git commit -am $npm_package_version && git tag $npm_package_version && git push && git push --tags && npm publish"
+  },
+  "eslintConfig": {
+    "extends": "eslint-config-standard",
+    "env": {
+      "browser": true,
+      "jest": true
+    },
+    "rules": {
+      "indent": [
+        "error",
+        2
+      ],
+      "semi": [
+        "error",
+        "always"
+      ]
+    }
+  },
+  "jest": {
+    "watchPathIgnorePatterns": [
+      "<rootDir>/node_modules/",
+      "<rootDir>/test/fixtures/.*?/dist/"
+    ]
+  },
+  "babel": {
+    "plugins": [
+      "transform-es2015-modules-commonjs"
+    ]
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "keywords": [
+    "webpack",
+    "plugin",
+    "worker",
+    "web worker",
+    "thread"
+  ],
+  "author": "The Chromium Authors",
+  "contributors": [
+    {
+      "name": "Jason Miller",
+      "email": "developit@google.com"
+    }
+  ],
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
+    "clean-webpack-plugin": "^0.1.19",
+    "eslint": "^5.4.0",
+    "eslint-config-standard": "^11.0.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-node": "^7.0.1",
+    "eslint-plugin-promise": "^4.0.0",
+    "eslint-plugin-standard": "^3.1.0",
+    "jest": "^23.5.0",
+    "microbundle": "^0.6.0",
+    "uglifyjs-webpack-plugin": "^1.3.0",
+    "webpack": "^4.17.1"
+  },
+  "dependencies": {
+    "loader-utils": "^1.1.0"
+  },
+  "peerDependencies": {
+    "webpack": ">= 3"
+  }
+}
