@@ -28,9 +28,15 @@ npm install -D worker-plugin
 Then drop it into your **webpack.config.js:**
 
 ```diff
-plugins: [
-+    new WorkerPlugin()
-]
++ const WorkerPlugin = require('worker-plugin');
+
+module.exports = {
+  <...>
+  plugins: [
+  +    new WorkerPlugin()
+  ]
+  <...>
+}
 ```
 
 ## Usage
