@@ -55,7 +55,7 @@ export function pitch (request) {
     const entry = entries && entries[0] && entries[0].files[0];
     if (!err && !entry) err = Error(`WorkerPlugin: no entry for ${request}`);
     if (err) return cb(err);
-    return cb(null, `export default __webpack_public_path__ + ${JSON.stringify(entry)}`);
+    return cb(null, `module.exports = __webpack_public_path__ + ${JSON.stringify(entry)}`);
   });
 };
 
