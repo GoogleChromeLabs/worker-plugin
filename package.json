@@ -6,7 +6,7 @@
   "repository": "GoogleChromeLabs/worker-plugin",
   "scripts": {
     "build": "microbundle --inline none --format cjs --no-compress src/*.js",
-    "prepublishOnly": "npm run build",
+    "prepack": "npm run build",
     "dev": "jest --verbose --watchAll",
     "test": "npm run build && jest --verbose",
     "release": "npm t && git commit -am $npm_package_version && git tag $npm_package_version && git push && git push --tags && npm publish"
