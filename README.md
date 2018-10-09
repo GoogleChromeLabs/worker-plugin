@@ -33,7 +33,7 @@ Then drop it into your **webpack.config.js:**
 module.exports = {
   <...>
   plugins: [
-  +    new WorkerPlugin()
++    new WorkerPlugin()
   ]
   <...>
 }
