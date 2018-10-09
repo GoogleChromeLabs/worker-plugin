@@ -38,7 +38,7 @@ describe('worker-plugin', () => {
 
     expect(stats.assets['main.js']).toMatch(/new\s+Worker\s*\(\s*__webpack__worker__\d\s*(,\s*\{[\s\n]*type\s*:\s*"module"[\s\n]*\}\s*)?\)/g);
 
-    expect(stats.assets['main.js']).toMatch(/__webpack_require__\.p\s*\+\s*"0\.worker\.js"/g);
+    expect(stats.assets['main.js']).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"0\.worker\.js"/g);
   });
 
   test('it uses the Worker constructor\'s name option and chunkFilename to generate asset filenames', async () => {
@@ -54,7 +54,7 @@ describe('worker-plugin', () => {
     const assetNames = Object.keys(stats.assets);
     expect(assetNames).toHaveLength(2);
     expect(assetNames).toContainEqual(expect.stringMatching(/^foo\.[a-zA-Z0-9]+\.worker\.js$/));
-    expect(stats.assets['main.js']).toMatch(/__webpack_require__\.p\s*\+\s*"foo\.[a-zA-Z0-9]+\.worker\.js"/g);
+    expect(stats.assets['main.js']).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"foo\.[a-zA-Z0-9]+\.worker\.js"/g);
   });
 
   test('it skips Worker constructor with non-string 1st argument', async () => {
