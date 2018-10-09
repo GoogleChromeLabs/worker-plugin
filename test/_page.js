@@ -1,24 +1,26 @@
 import puppeteer from 'puppeteer';
 
-export const getConsolePage = async (url, timeout = 1000) => {
+export async function evaluatePage (url, matches, timeout = 4000) {
   const args = await puppeteer.defaultArgs();
   const browser = await puppeteer.launch({
     args: [...args, '--enable-experimental-web-platform-features']
   });
   const page = await browser.newPage();
-  let consoleText = '';
-
   await page.goto(url);
 
-  await new Promise((resolve, reject) => {
-    page.on('console', msg => {
-      consoleText += `${msg.text()};`;
+  try {
+    return await new Promise((resolve, reject) => {
+      page.on('console', msg => {
+        const text = msg.text();
+        if (text.match(matches)) {
+          clearTimeout(timer);
+          resolve(text);
+        }
+      });
+
+      const timer = setTimeout(() => reject(Error('Timed Out')), timeout);
     });
-
-    setTimeout(resolve, timeout);
-  });
-
-  await browser.close();
-
-  return consoleText;
-};
+  } finally {
+    await browser.close();
+  }
+}

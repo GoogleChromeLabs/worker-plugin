@@ -15,26 +15,25 @@
  */
 
 import WorkerPlugin from '../src';
-import server from './_server';
+import path from 'path';
+import { createStaticServer } from './_server';
 import { runWebpack } from './_util';
-import { getConsolePage } from './_page';
+import { evaluatePage } from './_page';
 
-describe('worker-plugin', () => {
-  test("it uses the Worker's in browser", async () => {
+describe('Integration', () => {
+  test('The resulting Worker is instantiated correctly', async () => {
     const fixture = 'basic';
 
     await runWebpack(fixture, {
       plugins: [new WorkerPlugin()]
     });
 
-    await server.start({
-      fixture
-    });
+    const server = await createStaticServer(path.resolve(__dirname, 'fixtures', fixture));
 
-    const consoleText = await getConsolePage('http://localhost:3000');
+    const consoleText = await evaluatePage(server.url, /page got data/g);
 
     expect(consoleText).toMatch(/page got data/g);
 
-    server.stop();
+    await server.stop();
   });
 });
