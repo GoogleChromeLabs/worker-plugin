@@ -43,12 +43,18 @@ export default class WorkerPlugin {
             }
 
             const optsExpr = expr.arguments[1];
+            let typeModuleExpr;
             let opts;
             if (optsExpr) {
               opts = {};
-              for (let prop of optsExpr.properties) {
+              for (let i = optsExpr.properties.length; i--;) {
+                const prop = optsExpr.properties[i];
                 if (prop.type === 'Property' && !prop.computed && !prop.shorthand && !prop.method) {
                   opts[prop.key.name] = parser.evaluateExpression(prop.value).string;
+
+                  if (prop.key.name === 'type') {
+                    typeModuleExpr = prop;
+                  }
                 }
               }
             }
@@ -64,6 +70,13 @@ export default class WorkerPlugin {
             const req = `require(${JSON.stringify(workerLoader + (loaderOptions ? ('?' + JSON.stringify(loaderOptions)) : '') + '!' + dep.string)})`;
             const id = `__webpack__worker__${++workerId}`;
             ParserHelpers.toConstantDependency(parser, id)(expr.arguments[0]);
+
+            if (this.options.workerType) {
+              ParserHelpers.toConstantDependency(parser, JSON.stringify(this.options.workerType))(typeModuleExpr.value);
+            } else if (this.options.preserveTypeModule !== true) {
+              ParserHelpers.toConstantDependency(parser, '')(typeModuleExpr);
+            }
+
             return ParserHelpers.addParsedVariableToModule(parser, id, req);
           });
         });
