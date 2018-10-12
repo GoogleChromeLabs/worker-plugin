@@ -34,7 +34,7 @@ export function pitch (request) {
   const options = loaderUtils.getOptions(this) || {};
   const chunkFilename = compilerOptions.output.chunkFilename.replace(/\.([a-z]+)$/i, '.worker.$1');
   const workerOptions = {
-    filename: chunkFilename,
+    filename: chunkFilename.replace(/\[(?:chunkhash|contenthash)(:\d+(?::\d+)?)?\]/g, '[hash$1]'),
     chunkFilename,
     globalObject: 'self'
   };
@@ -51,7 +51,10 @@ export function pitch (request) {
     }
   });
 
-  workerCompiler.runAsChild((err, entries) => {
+  workerCompiler.runAsChild((err, entries, compilation) => {
+    if (!err && compilation.errors && compilation.errors.length) {
+      err = compilation.errors[0];
+    }
     const entry = entries && entries[0] && entries[0].files[0];
     if (!err && !entry) err = Error(`WorkerPlugin: no entry for ${request}`);
     if (err) return cb(err);
