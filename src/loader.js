@@ -39,7 +39,7 @@ export function pitch (request) {
     globalObject: 'self'
   };
 
-  const workerCompiler = this._compilation.createChildCompiler(NAME, workerOptions);
+  const workerCompiler = this._compilation.createChildCompiler(NAME, workerOptions, compilerOptions.plugins);
   (new WebWorkerTemplatePlugin(workerOptions)).apply(workerCompiler);
   (new SingleEntryPlugin(this.context, request, options.name)).apply(workerCompiler);
 
