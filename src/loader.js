@@ -40,7 +40,7 @@ export function pitch (request) {
     globalObject: 'self'
   };
 
-  const workerCompiler = this._compilation.createChildCompiler(NAME, workerOptions);
+  const workerCompiler = this._compilation.createChildCompiler(NAME, workerOptions, compilerOptions.plugins);
   (new WebWorkerTemplatePlugin(workerOptions)).apply(workerCompiler);
   (new FetchCompileWasmTemplatePlugin({
     mangleImports: compilerOptions.optimization.mangleWasmImports

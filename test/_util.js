@@ -17,7 +17,7 @@
 import path from 'path';
 import webpack from 'webpack';
 import CleanPlugin from 'clean-webpack-plugin';
-import UglifyJsPlugin from 'uglifyjs-webpack-plugin';
+import TerserPlugin from 'terser-webpack-plugin';
 
 export function runWebpack (fixture, { output, plugins, ...config } = {}) {
   return new Promise((resolve, reject) => {
@@ -33,9 +33,8 @@ export function runWebpack (fixture, { output, plugins, ...config } = {}) {
       },
       optimization: {
         minimizer: [
-          new UglifyJsPlugin({
-            uglifyOptions: {
-              ecma: 8,
+          new TerserPlugin({
+            terserOptions: {
               mangle: false,
               output: {
                 beautify: true
