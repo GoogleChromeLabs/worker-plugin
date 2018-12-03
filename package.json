@@ -78,6 +78,6 @@
     "loader-utils": "^1.1.0"
   },
   "peerDependencies": {
-    "webpack": ">= 3"
+    "webpack": ">= 4"
   }
 }
