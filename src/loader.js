@@ -17,6 +17,7 @@
 import loaderUtils from 'loader-utils';
 import SingleEntryPlugin from 'webpack/lib/SingleEntryPlugin';
 import WebWorkerTemplatePlugin from 'webpack/lib/webworker/WebWorkerTemplatePlugin';
+import FetchCompileWasmTemplatePlugin from 'webpack/lib/web/FetchCompileWasmTemplatePlugin';
 
 const NAME = 'WorkerPluginLoader';
 let hasWarned = false;
@@ -41,6 +42,9 @@ export function pitch (request) {
 
   const workerCompiler = this._compilation.createChildCompiler(NAME, workerOptions);
   (new WebWorkerTemplatePlugin(workerOptions)).apply(workerCompiler);
+  (new FetchCompileWasmTemplatePlugin({
+    mangleImports: compilerOptions.optimization.mangleWasmImports
+  })).apply(workerCompiler);
   (new SingleEntryPlugin(this.context, request, options.name)).apply(workerCompiler);
 
   const subCache = `subcache ${__dirname} ${request}`;
