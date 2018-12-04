@@ -3,7 +3,12 @@ import puppeteer from 'puppeteer';
 export async function evaluatePage (url, matches, timeout = 4000) {
   const args = await puppeteer.defaultArgs();
   const browser = await puppeteer.launch({
-    args: [...args, '--enable-experimental-web-platform-features']
+    args: [
+      ...args,
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--enable-experimental-web-platform-features'
+    ]
   });
   const page = await browser.newPage();
   await page.goto(url);
