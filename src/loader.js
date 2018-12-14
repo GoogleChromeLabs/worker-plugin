@@ -17,6 +17,7 @@
 import loaderUtils from 'loader-utils';
 import SingleEntryPlugin from 'webpack/lib/SingleEntryPlugin';
 import WebWorkerTemplatePlugin from 'webpack/lib/webworker/WebWorkerTemplatePlugin';
+import WORKER_PLUGIN_SYMBOL from './symbol';
 
 const NAME = 'WorkerPluginLoader';
 let hasWarned = false;
@@ -39,7 +40,19 @@ export function pitch (request) {
     globalObject: 'self'
   };
 
-  const workerCompiler = this._compilation.createChildCompiler(NAME, workerOptions, compilerOptions.plugins);
+  const pluginOptions = compilerOptions.plugins.find(p => p[WORKER_PLUGIN_SYMBOL]).options;
+  const plugins = (pluginOptions.plugins || []).map(plugin => {
+    if (typeof plugin !== 'string') {
+      return plugin;
+    }
+    const found = compilerOptions.plugins.find(p => p.constructor.name === plugin);
+    if (!found) {
+      console.warn(`Warning (workerize-loader): Plugin "${plugin}" is not found.`);
+    }
+    return found;
+  });
+
+  const workerCompiler = this._compilation.createChildCompiler(NAME, workerOptions, plugins);
   (new WebWorkerTemplatePlugin(workerOptions)).apply(workerCompiler);
   (new SingleEntryPlugin(this.context, request, options.name)).apply(workerCompiler);
 

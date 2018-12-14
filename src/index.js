@@ -16,6 +16,7 @@
 
 import path from 'path';
 import ParserHelpers from 'webpack/lib/ParserHelpers';
+import WORKER_PLUGIN_SYMBOL from './symbol';
 
 const NAME = 'WorkerPlugin';
 const JS_TYPES = ['auto', 'esm', 'dynamic'];
@@ -24,6 +25,7 @@ const workerLoader = path.resolve(__dirname, 'loader.js');
 export default class WorkerPlugin {
   constructor (options) {
     this.options = options || {};
+    this[WORKER_PLUGIN_SYMBOL] = true;
   }
 
   apply (compiler) {

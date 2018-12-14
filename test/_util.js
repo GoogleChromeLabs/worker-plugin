@@ -73,3 +73,12 @@ export function runWebpack (fixture, { output, plugins, ...config } = {}) {
     });
   });
 }
+
+export class CountApplyWebpackPlugin {
+  constructor() {
+    this.count = 0;
+  }
+  apply() {
+    this.count++;
+  }
+}
