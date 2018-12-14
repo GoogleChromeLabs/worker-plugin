@@ -62,6 +62,33 @@ piWorker.onmessage = event => {
 piWorker.postMessage(42);
 ```
 
+## Options & Plugins
+
+By default, `WorkerPlugin` doesn't run any of your configured Webpack plugins when bundling worker code - this avoids running things like `html-webpack-plugin` twice. For cases where it's necessary to apply a plugin to Worker code, use the `plugins` option.
+
+Here you can specify the names of plugins to "copy" from your existing Webpack configuration, or provide specific plugins to apply only to worker code:
+
+```js
+module.exports = {
+  <...>
+  plugins: [
+    // an example of a plugin already being used:
+    new SomeExistingPlugin({ <...> }),
+
+    new WorkerPlugin({
+      plugins: [
+        // A string here will copy the named plugin from your configuration:
+        'SomeExistingPlugin',
+        
+        // Or you can specify a plugin directly, only applied to Worker code:
+        new SomePluginToApplyOnlyToWorkers({ <...> })
+      ]
+    })
+  ]
+  <...>
+}
+```
+
 ## License
 
 Apache-2.0
