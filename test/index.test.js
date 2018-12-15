@@ -15,7 +15,7 @@
  */
 
 import WorkerPlugin from '../src';
-import { runWebpack } from './_util';
+import { runWebpack, CountApplyWebpackPlugin } from './_util';
 
 describe('worker-plugin', () => {
   test('exports a class', () => {
@@ -69,6 +69,42 @@ describe('worker-plugin', () => {
 
     const workerInit = assets['main.js'].match(/[^\n]*new\s+Worker\s*\([^)]*\)[^\n]*/g)[0];
     expect(workerInit).toMatch(/new\s+Worker\s*\(\s*__webpack__worker__\d\s*(,\s*\{[\s\n]*type\s*:\s*"classic"[\s\n]*\}\s*)?\)/g);
+  });
+
+  test('it does not enable other plugins when building worker script', async () => {
+    const countPlugin = new CountApplyWebpackPlugin();
+    await runWebpack('basic', {
+      plugins: [
+        countPlugin,
+        new WorkerPlugin()
+      ]
+    });
+    expect(countPlugin.count).toStrictEqual(1);
+  });
+
+  test('plugins: instance enables plugins when building worker script', async () => {
+    const countPlugin = new CountApplyWebpackPlugin();
+    await runWebpack('basic', {
+      plugins: [
+        new WorkerPlugin({
+          plugins: [countPlugin]
+        })
+      ]
+    });
+    expect(countPlugin.count).toStrictEqual(1);
+  });
+
+  test('plugins: string passes plugins from main config', async () => {
+    const countPlugin = new CountApplyWebpackPlugin();
+    await runWebpack('basic', {
+      plugins: [
+        countPlugin,
+        new WorkerPlugin({
+          plugins: ['CountApplyWebpackPlugin']
+        })
+      ]
+    });
+    expect(countPlugin.count).toStrictEqual(2);
   });
 
   test('it uses the Worker constructor\'s name option and chunkFilename to generate asset filenames', async () => {
