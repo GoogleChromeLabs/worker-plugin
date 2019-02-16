@@ -123,6 +123,19 @@ describe('worker-plugin', () => {
     expect(stats.assets['main.js']).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"foo\.[a-zA-Z0-9]+\.worker\.js"/g);
   });
 
+  test('it bundles WASM file which imported dynamically', async () => {
+    const stats = await runWebpack('wasm', {
+      plugins: [
+        new WorkerPlugin()
+      ]
+    });
+
+    const assetNames = Object.keys(stats.assets);
+    expect(assetNames).toHaveLength(4);
+    expect(assetNames).toContainEqual(expect.stringMatching(/^[a-zA-Z0-9]+\.module\.wasm$/));
+    expect(stats.assets['wasm.worker.js']).toMatch(/WebAssembly\.instantiate/);
+  });
+
   test('it skips Worker constructor with non-string 1st argument', async () => {
     const stats = await runWebpack('skip-blobs', {
       plugins: [
