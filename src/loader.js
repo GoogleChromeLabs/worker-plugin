@@ -23,14 +23,14 @@ import WORKER_PLUGIN_SYMBOL from './symbol';
 const NAME = 'WorkerPluginLoader';
 let hasWarned = false;
 
-export function pitch(request) {
+export function pitch (request) {
   this.cacheable(false);
   const cb = this.async();
 
   const compilerOptions = this._compiler.options || {};
   if (!hasWarned && compilerOptions.output && compilerOptions.output.globalObject === 'window') {
     hasWarned = true;
-    console.warn('Warning (workerize-loader): output.globalObject is set to "window". It should be set to "self" or "this" to support HMR in Workers.');
+    console.warn('Warning (worker-plugin): output.globalObject is set to "window". It must be set to "self" to support HMR in Workers.');
   }
 
   const options = loaderUtils.getOptions(this) || {};
@@ -48,7 +48,7 @@ export function pitch(request) {
     }
     const found = compilerOptions.plugins.find(p => p.constructor.name === plugin);
     if (!found) {
-      console.warn(`Warning (workerize-loader): Plugin "${plugin}" is not found.`);
+      console.warn(`Warning (worker-plugin): Plugin "${plugin}" is not found.`);
     }
     return found;
   });
