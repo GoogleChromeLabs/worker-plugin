@@ -28,7 +28,10 @@ export function pitch (request) {
   const cb = this.async();
 
   const compilerOptions = this._compiler.options || {};
-  if (!hasWarned && compilerOptions.output && compilerOptions.output.globalObject === 'window') {
+
+  const pluginOptions = compilerOptions.plugins.find(p => p[WORKER_PLUGIN_SYMBOL]).options;
+
+  if (pluginOptions.globalObject == null && !hasWarned && compilerOptions.output && compilerOptions.output.globalObject === 'window') {
     hasWarned = true;
     console.warn('Warning (worker-plugin): output.globalObject is set to "window". It must be set to "self" to support HMR in Workers.');
   }
@@ -38,10 +41,9 @@ export function pitch (request) {
   const workerOptions = {
     filename: chunkFilename.replace(/\[(?:chunkhash|contenthash)(:\d+(?::\d+)?)?\]/g, '[hash$1]'),
     chunkFilename,
-    globalObject: 'self'
+    globalObject: pluginOptions.globalObject || 'self'
   };
 
-  const pluginOptions = compilerOptions.plugins.find(p => p[WORKER_PLUGIN_SYMBOL]).options;
   const plugins = (pluginOptions.plugins || []).map(plugin => {
     if (typeof plugin !== 'string') {
       return plugin;

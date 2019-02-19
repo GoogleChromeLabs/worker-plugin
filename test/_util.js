@@ -75,10 +75,10 @@ export function runWebpack (fixture, { output, plugins, ...config } = {}) {
 }
 
 export class CountApplyWebpackPlugin {
-  constructor() {
+  constructor () {
     this.count = 0;
   }
-  apply() {
+  apply () {
     this.count++;
   }
 }

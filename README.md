@@ -62,7 +62,33 @@ piWorker.onmessage = event => {
 piWorker.postMessage(42);
 ```
 
-## Options & Plugins
+## Options
+
+In most cases, no options are necessary to use WorkerPlugin.
+
+### `globalObject`
+
+WorkerPlugin will warn you if your Webpack configuration has `output.globalObject` set to `window`, since doing so breaks Hot Module Replacement in web workers.
+
+If you're not using HMR and want to disable this warning, pass `globalObject:false`:
+
+```js
+new WorkerPlugin({
+  // disable warnings about "window" breaking HMR:
+  globalObject: false
+})
+```
+
+To configure the value of `output.globalObject` for WorkerPlugin's internal Webpack Compiler, set `globalObject` to any String:
+
+```js
+new WorkerPlugin({
+  // use "self" as the global object when receiving hot updates.
+  globalObject: 'self' // <-- this is the default value
+})
+```
+
+### `plugins`
 
 By default, `WorkerPlugin` doesn't run any of your configured Webpack plugins when bundling worker code - this avoids running things like `html-webpack-plugin` twice. For cases where it's necessary to apply a plugin to Worker code, use the `plugins` option.
 
