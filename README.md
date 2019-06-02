@@ -84,7 +84,7 @@ To configure the value of `output.globalObject` for WorkerPlugin's internal Webp
 ```js
 new WorkerPlugin({
   // use "self" as the global object when receiving hot updates.
-  globalObject: 'self' // <-- this is the default value
+  globalObject: 'self' // <-- The default value is 'window'.
 })
 ```
 
