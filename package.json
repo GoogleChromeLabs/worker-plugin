@@ -5,7 +5,7 @@
   "main": "dist/threads-plugin.js",
   "repository": "andywer/threads-plugin",
   "scripts": {
-    "build": "microbundle --inline none --format cjs --no-compress src/*.js",
+    "build": "microbundle --inline none --external @babel/types --format cjs --no-compress src/*.js",
     "prepack": "npm run build",
     "dev": "jest --verbose --watchAll",
     "test": "npm run build && jest --verbose",
@@ -71,8 +71,8 @@
     "eslint-plugin-node": "^8.0.0",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
-    "jest": "^23.6.0",
-    "microbundle": "^0.8.2",
+    "jest": "^24.8.0",
+    "microbundle": "^0.11.0",
     "puppeteer": "^1.11.0",
     "serve-handler": "^5.0.7",
     "terser-webpack-plugin": "^1.1.0",
@@ -82,6 +82,7 @@
     "loader-utils": "^1.1.0"
   },
   "peerDependencies": {
+    "@babel/types": ">= 7",
     "webpack": ">= 4"
   }
 }
