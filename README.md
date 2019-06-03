@@ -1,9 +1,12 @@
 <p align="center">
   <img src="https://i.imgur.com/MlrAQjl.jpg" width="1000" alt="worker-plugin">
 </p>
-<h1 align="center">👩‍🏭 worker-plugin</h1>
-<p align="center">Automatically bundle & compile Web Workers within Webpack.</p>
+<h1 align="center">👩‍🏭 threads-plugin</h1>
+<p align="center">Automatically bundle & compile <a href="https://github.com/andywer/threads.js">threads.js</a> workers within webpack.</p>
 
+### Fork of [`GoogleChromeLabs/worker-plugin`](https://github.com/GoogleChromeLabs/worker-plugin)
+
+This is an adapted version of the original `worker-plugin` that supports `Worker` constructors imported from [`threads`](https://github.com/andywer/threads.js).
 
 ### Features
 
@@ -22,18 +25,18 @@ Workers created from Blob & data URLs or without the `{ type:'module' }` option 
 ## Installation
 
 ```sh
-npm install -D worker-plugin
+npm install -D threads-plugin
 ```
 
 Then drop it into your **webpack.config.js:**
 
 ```diff
-+ const WorkerPlugin = require('worker-plugin');
++ const ThreadsPlugin = require('threads-plugin');
 
 module.exports = {
   <...>
   plugins: [
-+    new WorkerPlugin()
++    new ThreadsPlugin()
   ]
   <...>
 }
@@ -45,21 +48,25 @@ module.exports = {
 
 ```js
 // This is a module worker, so we can use imports (in the browser too!)
+import { expose } from 'threads';
 import { calculatePi } from './some-other-module';
 
-addEventListener('message', event => {
-  postMessage(calculatePi(event.data));
-});
+expose(function piTimesTwo(precision) {
+  return calculatePi(precision) * 2
+})
 ```
 
 **main.js**: _(our demo, on the main thread)_
 
 ```js
-const piWorker = new Worker('./worker.js', { type: 'module' });
-piWorker.onmessage = event => {
-  console.log('pi: ' + event.data);
-};
-piWorker.postMessage(42);
+import { spawn, Worker } from 'threads';
+
+main().catch(console.error)
+
+async function main() {
+  const piTimesTwo = await spawn(new Worker('./worker.js'))
+  console.log(`pi x 2 = ${await piTimesTwo(42)}`)
+}
 ```
 
 ## Options
@@ -68,21 +75,21 @@ In most cases, no options are necessary to use WorkerPlugin.
 
 ### `globalObject`
 
-WorkerPlugin will warn you if your Webpack configuration has `output.globalObject` set to `window`, since doing so breaks Hot Module Replacement in web workers.
+ThreadsPlugin will warn you if your Webpack configuration has `output.globalObject` set to `window`, since doing so breaks Hot Module Replacement in web workers.
 
 If you're not using HMR and want to disable this warning, pass `globalObject:false`:
 
 ```js
-new WorkerPlugin({
+new ThreadsPlugin({
   // disable warnings about "window" breaking HMR:
   globalObject: false
 })
 ```
 
-To configure the value of `output.globalObject` for WorkerPlugin's internal Webpack Compiler, set `globalObject` to any String:
+To configure the value of `output.globalObject` for ThreadsPlugin's internal Webpack Compiler, set `globalObject` to any String:
 
 ```js
-new WorkerPlugin({
+new ThreadsPlugin({
   // use "self" as the global object when receiving hot updates.
   globalObject: 'self' // <-- this is the default value
 })
@@ -90,7 +97,7 @@ new WorkerPlugin({
 
 ### `plugins`
 
-By default, `WorkerPlugin` doesn't run any of your configured Webpack plugins when bundling worker code - this avoids running things like `html-webpack-plugin` twice. For cases where it's necessary to apply a plugin to Worker code, use the `plugins` option.
+By default, `ThreadsPlugin` doesn't run any of your configured Webpack plugins when bundling worker code - this avoids running things like `html-webpack-plugin` twice. For cases where it's necessary to apply a plugin to Worker code, use the `plugins` option.
 
 Here you can specify the names of plugins to "copy" from your existing Webpack configuration, or provide specific plugins to apply only to worker code:
 
@@ -101,7 +108,7 @@ module.exports = {
     // an example of a plugin already being used:
     new SomeExistingPlugin({ <...> }),
 
-    new WorkerPlugin({
+    new ThreadsPlugin({
       plugins: [
         // A string here will copy the named plugin from your configuration:
         'SomeExistingPlugin',
