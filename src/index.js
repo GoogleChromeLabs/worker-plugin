@@ -14,6 +14,7 @@
  * the License.
  */
 
+import * as Types from '@babel/types';
 import path from 'path';
 import ParserHelpers from 'webpack/lib/ParserHelpers';
 import WORKER_PLUGIN_SYMBOL from './symbol';
@@ -34,8 +35,10 @@ export default class WorkerPlugin {
         factory.hooks.parser.for(`javascript/${type}`).tap(NAME, parser => {
           let workerId = 0;
 
-          parser.hooks.new.for('Worker').tap(NAME, expr => {
+          parser.hooks.new.for('imported var').tap(NAME, expr => {
             const dep = parser.evaluateExpression(expr.arguments[0]);
+
+            if (expr.callee.name !== 'Worker') return false
 
             if (!dep.isString()) {
               parser.state.module.warnings.push({
@@ -45,8 +48,13 @@ export default class WorkerPlugin {
             }
 
             const optsExpr = expr.arguments[1];
-            let typeModuleExpr;
-            let opts;
+            let typeModuleExpr = Types.objectProperty(
+              Types.identifier("type"),
+              Types.stringLiteral("module")
+            )
+            typeModuleExpr.range=[0, 0]
+
+            let opts = {};
             if (optsExpr) {
               opts = {};
               for (let i = optsExpr.properties.length; i--;) {
@@ -61,25 +69,12 @@ export default class WorkerPlugin {
               }
             }
 
-            if (!opts || opts.type !== 'module') {
-              parser.state.module.warnings.push({
-                message: `new Worker() will only be bundled if passed options that include { type: 'module' }.${opts ? `\n  Received: new Worker(${JSON.stringify(dep.string)}, ${JSON.stringify(opts)})` : ''}`
-              });
-              return false;
-            }
-
             let loaderOptions = opts.name && { name: opts.name };
             const req = `require(${JSON.stringify(workerLoader + (loaderOptions ? ('?' + JSON.stringify(loaderOptions)) : '') + '!' + dep.string)})`;
             const id = `__webpack__worker__${++workerId}`;
             ParserHelpers.toConstantDependency(parser, id)(expr.arguments[0]);
 
-            if (this.options.workerType) {
-              ParserHelpers.toConstantDependency(parser, JSON.stringify(this.options.workerType))(typeModuleExpr.value);
-            } else if (this.options.preserveTypeModule !== true) {
-              ParserHelpers.toConstantDependency(parser, '')(typeModuleExpr);
-            }
-
-            return ParserHelpers.addParsedVariableToModule(parser, id, req);
+            ParserHelpers.addParsedVariableToModule(parser, id, req);
           });
         });
       }
