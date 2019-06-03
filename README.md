@@ -4,7 +4,7 @@
 <h1 align="center">👩‍🏭 threads-plugin</h1>
 <p align="center">Automatically bundle & compile <a href="https://github.com/andywer/threads.js">threads.js</a> workers within webpack.</p>
 
-### Fork of [`GoogleChromeLabs/worker-plugin`](https://github.com/GoogleChromeLabs/worker-plugin)
+### Fork of [worker-plugin](https://github.com/GoogleChromeLabs/worker-plugin)
 
 This is an adapted version of the original `worker-plugin` that supports `Worker` constructors imported from [`threads`](https://github.com/andywer/threads.js).
 
