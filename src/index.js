@@ -36,9 +36,9 @@ export default class WorkerPlugin {
           let workerId = 0;
 
           parser.hooks.new.for('imported var').tap(NAME, expr => {
-            const dep = parser.evaluateExpression(expr.arguments[0]);
-
             if (expr.callee.name !== 'Worker') return false
+
+            const dep = parser.evaluateExpression(expr.arguments[0]);
 
             if (!dep.isString()) {
               parser.state.module.warnings.push({
