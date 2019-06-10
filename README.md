@@ -69,6 +69,28 @@ async function main() {
 }
 ```
 
+## Babel / TypeScript
+
+When transpiling your source code using Babel or TypeScript, make sure to that ES modules are transpiled by webpack, not by Babel or TypeScript. Otherwise the threads plugin won't be able to identify the imports.
+
+In your Babel configuration:
+
+```
+"presets": [
+  ["env", {
+    "modules": false
+  }]
+]
+```
+
+When using TypeScript:
+
+```
+"compilerOptions": {
+  "module": "esnext"
+}
+```
+
 ## Options
 
 In most cases, no options are necessary to use WorkerPlugin.
@@ -112,7 +134,7 @@ module.exports = {
       plugins: [
         // A string here will copy the named plugin from your configuration:
         'SomeExistingPlugin',
-        
+
         // Or you can specify a plugin directly, only applied to Worker code:
         new SomePluginToApplyOnlyToWorkers({ <...> })
       ]
