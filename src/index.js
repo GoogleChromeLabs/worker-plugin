@@ -30,11 +30,11 @@ export default class WorkerPlugin {
   }
 
   apply (compiler) {
+    let workerId = 0;
+
     compiler.hooks.normalModuleFactory.tap(NAME, factory => {
       for (const type of JS_TYPES) {
         factory.hooks.parser.for(`javascript/${type}`).tap(NAME, parser => {
-          let workerId = 0;
-
           parser.hooks.new.for('imported var').tap(NAME, expr => {
             if (expr.callee.name !== 'Worker') return false
 
@@ -79,5 +79,15 @@ export default class WorkerPlugin {
         });
       }
     });
+
+    compiler.hooks.afterCompile.tap(NAME, compilation => {
+      if (workerId === 0) {
+        compilation.warnings.push({
+          message:
+            'No instantiations of threads.js workers found. ' +
+            'Make sure you have configured Babel / TypeScript to not transpile ES modules, so webpack can do that.'
+        })
+      }
+    })
   }
 }
