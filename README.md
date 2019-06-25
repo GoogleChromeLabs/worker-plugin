@@ -1,12 +1,11 @@
 <p align="center">
   <img src="https://i.imgur.com/MlrAQjl.jpg" width="1000" alt="worker-plugin">
 </p>
+<p></p>
 <h1 align="center">👩‍🏭 threads-plugin</h1>
 <p align="center">Automatically bundle & compile <a href="https://github.com/andywer/threads.js">threads.js</a> workers within webpack.</p>
 
-### Fork of [worker-plugin](https://github.com/GoogleChromeLabs/worker-plugin)
-
-This is an adapted version of the original `worker-plugin` that supports `Worker` constructors imported from [`threads`](https://github.com/andywer/threads.js).
+This plugin is a fork of [worker-plugin](https://github.com/GoogleChromeLabs/worker-plugin): This is an adapted version of the original `worker-plugin` that supports `Worker` constructors imported from [`threads`](https://github.com/andywer/threads.js).
 
 ### Features
 
@@ -69,11 +68,15 @@ async function main() {
 }
 ```
 
+**Please make sure to use the `Worker` imported from `threads`, not the global `Worker`! The plugin will only consider those imported `Worker` instantiations.**
+
 ## Babel / TypeScript
 
 When transpiling your source code using Babel or TypeScript, make sure to that ES modules are transpiled by webpack, not by Babel or TypeScript. Otherwise the threads plugin won't be able to identify the imports.
 
-In your Babel configuration:
+### Babel
+
+In your Babel configuration when using `@babel/preset-env`:
 
 ```
 "presets": [
@@ -83,7 +86,13 @@ In your Babel configuration:
 ]
 ```
 
-When using TypeScript:
+If you are using `create-react-app` or `babel-preset-react-app` (`"presets": ["react-app"]`), you are already good to go - no need to adapt the configuration.
+
+So the idea is to make sure that ES modules are still intact and not transpiled down to anything else by Babel. Otherwise the plugin won't work. This kind of configuration is best practice anyhow.
+
+### TypeScript
+
+When using TypeScript, make sure this setting is part of your TypeScript configuration, either in the `ts-loader` options or in your `tsconfig.json` file:
 
 ```
 "compilerOptions": {
