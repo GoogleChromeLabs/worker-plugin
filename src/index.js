@@ -84,8 +84,11 @@ export default class WorkerPlugin {
       if (workerId === 0) {
         compilation.warnings.push({
           message:
-            'No instantiations of threads.js workers found. ' +
-            'Make sure you have configured Babel / TypeScript to not transpile ES modules, so webpack can do that.'
+            'No instantiations of threads.js workers found.\n' +
+            'Please check that:\n' +
+            '  1. You have configured Babel / TypeScript to not transpile ES modules\n' +
+            '  2. You import `Worker` from `threads` where you use it\n\n' +
+            'For more details see: https://github.com/andywer/threads-plugin\n'
         })
       }
     })
