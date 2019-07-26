@@ -22,10 +22,6 @@ const NAME = 'WorkerPlugin';
 const JS_TYPES = ['auto', 'esm', 'dynamic'];
 const workerLoader = path.resolve(__dirname, 'loader.js');
 
-function generateId() {
-  return Math.random().toString(36).slice(-5);
-}
-
 export default class WorkerPlugin {
   constructor (options) {
     this.options = options || {};
@@ -36,6 +32,8 @@ export default class WorkerPlugin {
     compiler.hooks.normalModuleFactory.tap(NAME, factory => {
       for (const type of JS_TYPES) {
         factory.hooks.parser.for(`javascript/${type}`).tap(NAME, parser => {
+          let workerId = 0;
+
           parser.hooks.new.for('Worker').tap(NAME, expr => {
             const dep = parser.evaluateExpression(expr.arguments[0]);
 
@@ -72,7 +70,7 @@ export default class WorkerPlugin {
 
             let loaderOptions = opts.name && { name: opts.name };
             const req = `require(${JSON.stringify(workerLoader + (loaderOptions ? ('?' + JSON.stringify(loaderOptions)) : '') + '!' + dep.string)})`;
-            const id = `__webpack__worker__${generateId()}`;
+            const id = `__webpack__worker__${++workerId}`;
             ParserHelpers.toConstantDependency(parser, id)(expr.arguments[0]);
 
             if (this.options.workerType) {
