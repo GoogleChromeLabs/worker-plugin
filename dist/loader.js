@@ -23,6 +23,11 @@ var WORKER_PLUGIN_SYMBOL = _interopDefault(require('./symbol.js'));
  */
 var NAME = 'WorkerPluginLoader';
 var hasWarned = false;
+
+function generateId() {
+  return Math.random().toString(36).slice(-5);
+}
+
 function pitch(request) {
   this.cacheable(false);
   var cb = this.async();
@@ -35,7 +40,7 @@ function pitch(request) {
   }
 
   var options = loaderUtils.getOptions(this) || {};
-  var chunkFilename = compilerOptions.output.chunkFilename.replace(/\.([a-z]+)$/i, '.worker.$1');
+  var chunkFilename = compilerOptions.output.chunkFilename.replace(/\.([a-z]+)$/i, generateId() + '.worker.$1');
   var workerOptions = {
     filename: chunkFilename.replace(/\[(?:chunkhash|contenthash)(:\d+(?::\d+)?)?\]/g, '[hash$1]'),
     chunkFilename: chunkFilename,

@@ -23,6 +23,10 @@ import WORKER_PLUGIN_SYMBOL from './symbol';
 const NAME = 'WorkerPluginLoader';
 let hasWarned = false;
 
+function generateId () {
+  return Math.random().toString(36).slice(-5);
+}
+
 export function pitch (request) {
   this.cacheable(false);
   const cb = this.async();
@@ -37,7 +41,7 @@ export function pitch (request) {
   }
 
   const options = loaderUtils.getOptions(this) || {};
-  const chunkFilename = compilerOptions.output.chunkFilename.replace(/\.([a-z]+)$/i, '.worker.$1');
+  const chunkFilename = compilerOptions.output.chunkFilename.replace(/\.([a-z]+)$/i, generateId() + '.worker.$1');
   const workerOptions = {
     filename: chunkFilename.replace(/\[(?:chunkhash|contenthash)(:\d+(?::\d+)?)?\]/g, '[hash$1]'),
     chunkFilename,

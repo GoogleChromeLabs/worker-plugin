@@ -22,11 +22,6 @@ var WORKER_PLUGIN_SYMBOL = _interopDefault(require('./symbol.js'));
 var NAME = 'WorkerPlugin';
 var JS_TYPES = ['auto', 'esm', 'dynamic'];
 var workerLoader = path.resolve(__dirname, 'loader.js');
-
-function generateId() {
-  return Math.random().toString(36).slice(-5);
-}
-
 var WorkerPlugin = function WorkerPlugin(options) {
   this.options = options || {};
   this[WORKER_PLUGIN_SYMBOL] = true;
@@ -40,6 +35,7 @@ WorkerPlugin.prototype.apply = function apply (compiler) {
       var type = list[i];
 
         factory.hooks.parser.for(("javascript/" + type)).tap(NAME, function (parser) {
+        var workerId = 0;
         parser.hooks.new.for('Worker').tap(NAME, function (expr) {
           var dep = parser.evaluateExpression(expr.arguments[0]);
 
@@ -81,7 +77,7 @@ WorkerPlugin.prototype.apply = function apply (compiler) {
             name: opts.name
           };
           var req = "require(" + (JSON.stringify(workerLoader + (loaderOptions ? '?' + JSON.stringify(loaderOptions) : '') + '!' + dep.string)) + ")";
-          var id = "__webpack__worker__" + (generateId());
+          var id = "__webpack__worker__" + (++workerId);
           ParserHelpers.toConstantDependency(parser, id)(expr.arguments[0]);
 
           if (this$1.options.workerType) {
