@@ -45,6 +45,23 @@ describe('worker-plugin', () => {
     expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"0\.worker\.js"/g);
   });
 
+  test('it replaces multiple Worker exports with __webpack_require__', async () => {
+    const stats = await runWebpack('multiple', {
+      plugins: [
+        new WorkerPlugin()
+      ]
+    });
+
+    const assetNames = Object.keys(stats.assets);
+    expect(assetNames).toHaveLength(3);
+    expect(assetNames).toContainEqual('0.worker.js');
+    expect(assetNames).toContainEqual('1.worker.js');
+
+    const main = stats.assets['main.js'];
+    expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"0\.worker\.js"/g);
+    expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"1\.worker\.js"/g);
+  });
+
   test('retainModule:true leaves {type:module} in worker init', async () => {
     const { assets } = await runWebpack('basic', {
       plugins: [
