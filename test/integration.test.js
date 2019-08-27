@@ -20,6 +20,8 @@ import { createStaticServer } from './_server';
 import { runWebpack } from './_util';
 import { evaluatePage } from './_page';
 
+jest.setTimeout(30000);
+
 describe('Integration', () => {
   test('The resulting Worker is instantiated correctly', async () => {
     const fixture = 'basic';
