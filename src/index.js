@@ -30,10 +30,9 @@ export default class WorkerPlugin {
 
   apply (compiler) {
     compiler.hooks.normalModuleFactory.tap(NAME, factory => {
+      let workerId = 0;
       for (const type of JS_TYPES) {
         factory.hooks.parser.for(`javascript/${type}`).tap(NAME, parser => {
-          let workerId = 0;
-
           parser.hooks.new.for('Worker').tap(NAME, expr => {
             const dep = parser.evaluateExpression(expr.arguments[0]);
 
@@ -68,9 +67,9 @@ export default class WorkerPlugin {
               return false;
             }
 
-            const loaderOptions = { name: opts.name || workerId };
+            const loaderOptions = { name: opts.name || workerId + '' };
             const req = `require(${JSON.stringify(workerLoader + '?' + JSON.stringify(loaderOptions) + '!' + dep.string)})`;
-            const id = `__webpack__worker__${++workerId}`;
+            const id = `__webpack__worker__${workerId++}`;
             ParserHelpers.toConstantDependency(parser, id)(expr.arguments[0]);
 
             if (this.options.workerType) {

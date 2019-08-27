@@ -56,6 +56,7 @@ export function pitch (request) {
   });
 
   const workerCompiler = this._compilation.createChildCompiler(NAME, workerOptions, plugins);
+  workerCompiler.context = this._compiler.context;
   (new WebWorkerTemplatePlugin(workerOptions)).apply(workerCompiler);
   (new FetchCompileWasmTemplatePlugin({
     mangleImports: compilerOptions.optimization.mangleWasmImports

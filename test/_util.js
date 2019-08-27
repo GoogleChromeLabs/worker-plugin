@@ -19,44 +19,98 @@ import webpack from 'webpack';
 import CleanPlugin from 'clean-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 
+export function sleep (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export function runWebpack (fixture, { output, plugins, ...config } = {}) {
+  return run(callback => webpack({
+    mode: 'production',
+    devtool: false,
+    context: path.resolve(__dirname, 'fixtures', fixture),
+    entry: './entry.js',
+    output: {
+      publicPath: 'dist/',
+      path: path.resolve(__dirname, 'fixtures', fixture, 'dist'),
+      ...(output || {})
+    },
+    optimization: {
+      minimizer: [
+        new TerserPlugin({
+          terserOptions: {
+            mangle: false,
+            output: {
+              beautify: true
+            }
+          },
+          sourceMap: false
+        })
+      ]
+    },
+    plugins: [
+      new CleanPlugin([
+        path.resolve(__dirname, 'fixtures', fixture, 'dist', '**')
+      ])
+    ].concat(plugins || []),
+    ...config
+  }, callback));
+}
+
+export function watchWebpack (fixture, { output, plugins, context, ...config } = {}) {
+  context = context || path.resolve(__dirname, 'fixtures', fixture);
+  const compiler = webpack({
+    mode: 'production',
+    context,
+    entry: './entry.js',
+    output: {
+      publicPath: 'dist/',
+      path: path.resolve(context, 'dist'),
+      ...(output || {})
+    },
+    optimization: {
+      minimize: true,
+      minimizer: [
+        new TerserPlugin({
+          terserOptions: {
+            mangle: false,
+            output: {
+              beautify: true
+            }
+          },
+          sourceMap: false
+        })
+      ]
+    },
+    plugins: plugins || []
+  });
+  // compiler.watch({});
+  compiler.doRun = () => run(compiler.run.bind(compiler));
+  return compiler;
+}
+
+export class CountApplyWebpackPlugin {
+  constructor () {
+    this.count = 0;
+  }
+  apply () {
+    this.count++;
+  }
+}
+
+export function statsWithAssets (stats) {
+  stats.assets = Object.keys(stats.compilation.assets).reduce((acc, name) => {
+    acc[name] = stats.compilation.assets[name].source();
+    return acc;
+  }, {});
+  return stats;
+}
+
+function run (runner) {
   return new Promise((resolve, reject) => {
-    webpack({
-      mode: 'production',
-      devtool: false,
-      context: path.resolve(__dirname, 'fixtures', fixture),
-      entry: './entry.js',
-      output: {
-        publicPath: 'dist/',
-        path: path.resolve(__dirname, 'fixtures', fixture, 'dist'),
-        ...(output || {})
-      },
-      optimization: {
-        minimizer: [
-          new TerserPlugin({
-            terserOptions: {
-              mangle: false,
-              output: {
-                beautify: true
-              }
-            },
-            sourceMap: false
-          })
-        ]
-      },
-      plugins: [
-        new CleanPlugin([
-          path.resolve(__dirname, 'fixtures', fixture, 'dist', '**')
-        ])
-      ].concat(plugins || []),
-      ...config
-    }, (err, stats) => {
+    runner((err, stats) => {
       if (err) return reject(err);
 
-      stats.assets = Object.keys(stats.compilation.assets).reduce((acc, name) => {
-        acc[name] = stats.compilation.assets[name].source();
-        return acc;
-      }, {});
+      statsWithAssets(stats);
 
       stats.info = stats.toJson({ assets: true, chunks: true });
 
@@ -72,13 +126,4 @@ export function runWebpack (fixture, { output, plugins, ...config } = {}) {
       resolve(stats);
     });
   });
-}
-
-export class CountApplyWebpackPlugin {
-  constructor () {
-    this.count = 0;
-  }
-  apply () {
-    this.count++;
-  }
 }

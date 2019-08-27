@@ -14,8 +14,12 @@
  * the License.
  */
 
+import { resolve } from 'path';
+import { readFileSync, writeFileSync } from 'fs';
 import WorkerPlugin from '../src';
-import { runWebpack, CountApplyWebpackPlugin } from './_util';
+import { runWebpack, CountApplyWebpackPlugin, watchWebpack, statsWithAssets, sleep } from './_util';
+
+jest.setTimeout(30000);
 
 describe('worker-plugin', () => {
   test('exports a class', () => {
@@ -166,5 +170,59 @@ describe('worker-plugin', () => {
     expect(stats.assets['main.js']).not.toMatch(/new\s+Worker\s*\(\s*__webpack__worker__\d\s*(,\s*\{[\s\n]*type\s*:\s*"module"[\s\n]*\}\s*)?\)/g);
 
     expect(stats.assets['main.js']).toMatch(/new\s+Worker\s*\(\s*new\s+Blob\s*\(\s*\[\s*'onmessage=\(\)=>\{postMessage\("right back at ya"\)\}'\s*\]\s*\)\s*\)/g);
+  });
+
+  describe('watch mode', () => {
+    const workerFile = resolve(__dirname, 'fixtures', 'watch', 'worker.js');
+    const workerCode = readFileSync(workerFile, 'utf-8');
+    afterAll(() => {
+      writeFileSync(workerFile, workerCode);
+    });
+
+    test('it produces consistent modules in watch mode', async () => {
+      const compiler = watchWebpack('watch', {
+        plugins: [
+          new WorkerPlugin()
+        ]
+      });
+
+      function Deferred () {
+        let controller;
+        const p = new Promise((resolve, reject) => {
+          controller = { resolve, reject };
+        });
+        Object.assign(p, controller);
+        return p;
+      }
+
+      let stats;
+      let ready = new Deferred();
+
+      const watcher = compiler.watch({
+        aggregateTimeout: 1,
+        poll: 50,
+        ignored: /node_modules|dist/
+      }, (err, stats) => {
+        if (err) ready.reject(err);
+        else ready.resolve(statsWithAssets(stats));
+      });
+
+      try {
+        for (let i = 1; i < 5; i++) {
+          console.log(i);
+          ready = new Deferred();
+          writeFileSync(workerFile, workerCode.replace(/console\.log\('hello from worker( \d+)?'\)/, `console.log('hello from worker ${i}')`));
+          await sleep(500);
+          stats = await ready;
+          await sleep(500);
+          expect(Object.keys(stats.assets).sort()).toEqual(['0.worker.js', 'main.js']);
+          expect(stats.assets['0.worker.js']).toContain(`hello from worker ${i}`);
+        }
+      } finally {
+        watcher.close();
+      }
+
+      await sleep(500);
+    });
   });
 });
