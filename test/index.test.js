@@ -209,12 +209,11 @@ describe('worker-plugin', () => {
 
       try {
         for (let i = 1; i < 5; i++) {
-          console.log(i);
           ready = new Deferred();
           writeFileSync(workerFile, workerCode.replace(/console\.log\('hello from worker( \d+)?'\)/, `console.log('hello from worker ${i}')`));
-          await sleep(500);
+          await sleep(1000);
           stats = await ready;
-          await sleep(500);
+          await sleep(1000);
           expect(Object.keys(stats.assets).sort()).toEqual(['0.worker.js', 'main.js']);
           expect(stats.assets['0.worker.js']).toContain(`hello from worker ${i}`);
         }
@@ -222,7 +221,7 @@ describe('worker-plugin', () => {
         watcher.close();
       }
 
-      await sleep(500);
+      await sleep(1000);
     });
   });
 });
