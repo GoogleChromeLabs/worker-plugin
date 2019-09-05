@@ -1,6 +1,6 @@
 {
   "name": "threads-plugin",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Webpack plugin to bundle threads.js workers automagically.",
   "main": "dist/threads-plugin.js",
   "repository": "andywer/threads-plugin",
