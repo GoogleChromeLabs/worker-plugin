@@ -69,9 +69,9 @@ export default class WorkerPlugin {
               }
             }
 
-            let loaderOptions = opts.name && { name: opts.name };
-            const req = `require(${JSON.stringify(workerLoader + (loaderOptions ? ('?' + JSON.stringify(loaderOptions)) : '') + '!' + dep.string)})`;
-            const id = `__webpack__worker__${++workerId}`;
+            const loaderOptions = { name: opts.name || workerId + '' };
+            const req = `require(${JSON.stringify(workerLoader + '?' + JSON.stringify(loaderOptions) + '!' + dep.string)})`;
+            const id = `__webpack__worker__${workerId++}`;
             ParserHelpers.toConstantDependency(parser, id)(expr.arguments[0]);
 
             ParserHelpers.addParsedVariableToModule(parser, id, req);

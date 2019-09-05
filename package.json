@@ -31,7 +31,7 @@
   "jest": {
     "watchPathIgnorePatterns": [
       "<rootDir>/node_modules/",
-      "<rootDir>/test/fixtures/.*?/dist/"
+      "<rootDir>/test/fixtures/"
     ]
   },
   "babel": {
@@ -63,6 +63,9 @@
   ],
   "license": "Apache-2.0",
   "devDependencies": {
+    "@file-services/memory": "^1.0.3",
+    "@file-services/node": "^1.0.3",
+    "@file-services/overlay": "^1.0.3",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
     "clean-webpack-plugin": "^1.0.0",
     "eslint": "^5.9.0",
