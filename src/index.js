@@ -46,6 +46,10 @@ export default class WorkerPlugin {
               });
               return false;
             }
+            if (/^(https?:)?\/\//i.test(dep.string)) {
+              // Ignore absolute URL workers
+              return false;
+            }
 
             const optsExpr = expr.arguments[1];
             let typeModuleExpr = Types.objectProperty(
