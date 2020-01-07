@@ -14,8 +14,13 @@
  * the License.
  */
 
-const worker = new Worker('./worker', { type: 'module', });
-worker.onmessage = ({ data }) => {
-  console.log('page got data: ', data);
-};
-worker.postMessage('hello');
+import { foo } from './dep';
+
+console.log('hello from worker');
+
+addEventListener('message', ({ data }) => {
+  console.log('worker got message', data);
+  if (data === 'hello') {
+    postMessage(foo);
+  }
+});

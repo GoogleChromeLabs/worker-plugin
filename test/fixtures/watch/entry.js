@@ -14,7 +14,7 @@
  * the License.
  */
 
-const worker = new Worker('./worker', { type: 'module', });
+const worker = new Worker('./worker', { type: 'module' });
 worker.onmessage = ({ data }) => {
   console.log('page got data: ', data);
 };

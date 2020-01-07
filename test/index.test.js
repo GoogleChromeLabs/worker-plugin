@@ -44,9 +44,36 @@ describe('worker-plugin', () => {
     expect(main).toMatch(/[^\n]*new\s+Worker\s*\([^)]*\)[^\n]*/g);
 
     const workerInit = main.match(/[^\n]*new\s+Worker\s*\([^)]*\)[^\n]*/g)[0];
-    expect(workerInit).toMatch(/new\s+Worker\s*\(\s*__webpack__worker__\d\s*(,\s*\{\}\s*)?\)/g);
+    // As it replaces the value of the `type` property with `undefined`
+    // it will emit a string that contains line breaks, like:
+    // `{\n type: void 0 \n}`.
+    // We have to replace those line breaks thus it will become
+    // one-line string, like:
+    // `const worker = new Worker(__webpack__worker__0, { type: void 0 });`
+    const workerInitWithoutLineBreak = workerInit.replace(/\n/g, '');
+    // Match also the `type: void 0` string
+    expect(workerInitWithoutLineBreak).toMatch(
+      /new\s+Worker\s*\(\s*__webpack__worker__\d\s*(,\s*\{\s+type\:\svoid [0]\s+\}\s*)?\)/g
+    );
 
     expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"0\.worker\.js"/g);
+  });
+
+  test('it replaces multiple Worker exports with __webpack_require__', async () => {
+    const stats = await runWebpack('multiple', {
+      plugins: [
+        new WorkerPlugin()
+      ]
+    });
+
+    const assetNames = Object.keys(stats.assets);
+    expect(assetNames).toHaveLength(3);
+    expect(assetNames).toContainEqual('0.worker.js');
+    expect(assetNames).toContainEqual('1.worker.js');
+
+    const main = stats.assets['main.js'];
+    expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"0\.worker\.js"/g);
+    expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"1\.worker\.js"/g);
   });
 
   test('it replaces multiple Worker exports with __webpack_require__', async () => {

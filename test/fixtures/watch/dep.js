@@ -14,8 +14,4 @@
  * the License.
  */
 
-const worker = new Worker('./worker', { type: 'module', });
-worker.onmessage = ({ data }) => {
-  console.log('page got data: ', data);
-};
-worker.postMessage('hello');
+export const foo = 'bar';

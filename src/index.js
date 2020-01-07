@@ -33,6 +33,7 @@ export default class WorkerPlugin {
     let workerId = 0;
 
     compiler.hooks.normalModuleFactory.tap(NAME, factory => {
+      let workerId = 0;
       for (const type of JS_TYPES) {
         factory.hooks.parser.for(`javascript/${type}`).tap(NAME, parser => {
           parser.hooks.new.for('imported var').tap(NAME, expr => {

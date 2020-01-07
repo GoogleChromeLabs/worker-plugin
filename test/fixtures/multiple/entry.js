@@ -14,8 +14,15 @@
  * the License.
  */
 
-const worker = new Worker('./worker', { type: 'module', });
-worker.onmessage = ({ data }) => {
+const worker0 = new Worker('./worker-0', { type: 'module' });
+const worker1 = new Worker('./worker-1', { type: 'module' });
+
+worker0.onmessage = ({ data }) => {
   console.log('page got data: ', data);
 };
-worker.postMessage('hello');
+worker0.postMessage('hello 0');
+
+worker1.onmessage = ({ data }) => {
+  console.log('page got data: ', data);
+};
+worker1.postMessage('hello 1');
