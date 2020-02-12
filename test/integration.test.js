@@ -14,28 +14,49 @@
  * the License.
  */
 
-import WorkerPlugin from '../src';
-import path from 'path';
-import { createStaticServer } from './_server';
-import { runWebpack } from './_util';
-import { evaluatePage } from './_page';
+import WorkerPlugin from "../src";
+import path from "path";
+import { createStaticServer } from "./_server";
+import { runWebpack } from "./_util";
+import { evaluatePage } from "./_page";
 
 jest.setTimeout(30000);
 
-describe('Integration', () => {
-  test('The resulting Worker is instantiated correctly', async () => {
-    const fixture = 'basic';
+describe("Integration", () => {
+  test("The resulting Worker is instantiated correctly", async () => {
+    const fixture = "basic";
 
     await runWebpack(fixture, {
       plugins: [new WorkerPlugin()]
     });
 
-    const server = await createStaticServer(path.resolve(__dirname, 'fixtures', fixture));
+    const server = await createStaticServer(
+      path.resolve(__dirname, "fixtures", fixture)
+    );
 
     const consoleText = await evaluatePage(server.url, /page got data/g);
 
     expect(consoleText).toMatch(/page got data/g);
 
+    await server.stop();
+  });
+
+  test("The SharedWorker is instantiated correctly", async () => {
+    const fixture = "shared";
+
+    await runWebpack(fixture, {
+      plugins: [new WorkerPlugin()]
+    });
+
+    const server = await createStaticServer(
+      path.resolve(__dirname, "fixtures", fixture)
+    );
+
+    const consoleText = await evaluatePage(server.url, /page got data/g);
+
+    expect(consoleText).toMatch(/page got data/g);
+
+    await server.stop();
     await server.stop();
   });
 });
