@@ -117,6 +117,14 @@ module.exports = {
 }
 ```
 
+### `sharedWorker` _(boolean)_
+
+If set to `true`, this option enables the bundling of [SharedWorker](https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker):
+
+```js
+const shared = new SharedWorker('./my-shared-worker.js', { type: 'module' });
+```
+
 ### `preserveTypeModule` _(boolean)_
 ### `workerType` _(string)_
 
