@@ -86,7 +86,7 @@ export default class WorkerPlugin {
           };
           
           parser.hooks.new.for('Worker').tap(NAME, handleWorker('Worker'));
-          if (this.options.sharedWorker !== false) {
+          if (this.options.sharedWorker) {
             parser.hooks.new.for('SharedWorker').tap(NAME, handleWorker('SharedWorker'));
           }
         });
