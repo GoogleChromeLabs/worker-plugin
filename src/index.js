@@ -33,12 +33,12 @@ export default class WorkerPlugin {
       let workerId = 0;
       for (const type of JS_TYPES) {
         factory.hooks.parser.for(`javascript/${type}`).tap(NAME, parser => {
-          parser.hooks.new.for('Worker').tap(NAME, expr => {
+          const handleWorker = workerTypeString => expr => {
             const dep = parser.evaluateExpression(expr.arguments[0]);
 
             if (!dep.isString()) {
               parser.state.module.warnings.push({
-                message: 'new Worker() will only be bundled if passed a String.'
+                message: `new ${workerTypeString}() will only be bundled if passed a String.`
               });
               return false;
             }
@@ -62,7 +62,7 @@ export default class WorkerPlugin {
 
             if (!opts || opts.type !== 'module') {
               parser.state.module.warnings.push({
-                message: `new Worker() will only be bundled if passed options that include { type: 'module' }.${opts ? `\n  Received: new Worker(${JSON.stringify(dep.string)}, ${JSON.stringify(opts)})` : ''}`
+                message: `new ${workerTypeString}() will only be bundled if passed options that include { type: 'module' }.${opts ? `\n  Received: new ${workerTypeString}()(${JSON.stringify(dep.string)}, ${JSON.stringify(opts)})` : ''}`
               });
               return false;
             }
@@ -83,7 +83,9 @@ export default class WorkerPlugin {
             }
 
             return ParserHelpers.addParsedVariableToModule(parser, id, req);
-          });
+          };
+          parser.hooks.new.for('Worker').tap(NAME, handleWorker('Worker'));
+          parser.hooks.new.for('SharedWorker').tap(NAME, handleWorker('SharedWorker'));
         });
       }
     });

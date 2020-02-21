@@ -38,4 +38,19 @@ describe('Integration', () => {
 
     await server.stop();
   });
+  test('The SharedWorker is instantiated correctly', async () => {
+    const fixture = 'shared';
+
+    await runWebpack(fixture, {
+      plugins: [new WorkerPlugin()]
+    });
+
+    const server = await createStaticServer(path.resolve(__dirname, 'fixtures', fixture));
+
+    const consoleText = await evaluatePage(server.url, /page got data/g);
+
+    expect(consoleText).toMatch(/page got data/g);
+
+    await server.stop();
+  });
 });
