@@ -38,11 +38,14 @@ describe('Integration', () => {
 
     await server.stop();
   });
-  test('The SharedWorker is instantiated correctly', async () => {
+
+  test('SharedWorker is instantiated correctly', async () => {
     const fixture = 'shared';
 
     await runWebpack(fixture, {
-      plugins: [new WorkerPlugin()]
+      plugins: [new WorkerPlugin({
+        sharedWorker: true
+      })]
     });
 
     const server = await createStaticServer(path.resolve(__dirname, 'fixtures', fixture));
