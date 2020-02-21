@@ -75,7 +75,11 @@ export default class WorkerPlugin {
             if (this.options.workerType) {
               ParserHelpers.toConstantDependency(parser, JSON.stringify(this.options.workerType))(typeModuleExpr.value);
             } else if (this.options.preserveTypeModule !== true) {
-              ParserHelpers.toConstantDependency(parser, '')(typeModuleExpr);
+              // Options object can contain comma at the end e.g. `{ type: 'module', }`.
+              // Previously, `type` property was replaced with an empty string
+              // that left this comma.
+              // Currently the `type` property value is replaced with `undefined`.
+              ParserHelpers.toConstantDependency(parser, 'type:undefined')(typeModuleExpr);
             }
 
             return ParserHelpers.addParsedVariableToModule(parser, id, req);
