@@ -17,7 +17,7 @@ const worker = new Worker('./foo.js', { type: 'module' });
 
 The best part? That worker constructor works just fine without bundling turned on, but when bundled the result is **supported in all browsers** that support Web Workers - all the way back to IE 10!
 
-Workers created from Blob & data URLs or without the `{ type:'module' }` option are left unchanged.
+Workers with fully dynamic URLs, Blob URLs, data URLs or with no `{ type:'module' }` option are left unchanged.
 
 ## Installation
 
@@ -62,13 +62,15 @@ piWorker.onmessage = event => {
 piWorker.postMessage(42);
 ```
 
+> **Note:** in order to ensure WorkerPlugin bundles your worker, make sure you're passing a **string** URL/filename to the Worker constructor. WorkerPlugin cannot bundle workers with dynamic/variable filenames, Blob or data URLs - it will leave them unmodified and print a warning during your build.
+
 ## Options
 
 In most cases, no options are necessary to use WorkerPlugin.
 
-### `globalObject`
+### `globalObject` _(string | false)_
 
-WorkerPlugin will warn you if your Webpack configuration has `output.globalObject` set to `window`, since doing so breaks Hot Module Replacement in web workers.
+WorkerPlugin will print a warning if your Webpack configuration has `output.globalObject` set to `window`, since doing so breaks Hot Module Replacement in web workers.
 
 If you're not using HMR and want to disable this warning, pass `globalObject:false`:
 
@@ -88,9 +90,9 @@ new WorkerPlugin({
 })
 ```
 
-### `plugins`
+### `plugins` _(array)_
 
-By default, `WorkerPlugin` doesn't run any of your configured Webpack plugins when bundling worker code - this avoids running things like `html-webpack-plugin` twice. For cases where it's necessary to apply a plugin to Worker code, use the `plugins` option.
+By default, WorkerPlugin doesn't run any of your configured Webpack plugins when bundling worker code - this avoids running things like `html-webpack-plugin` twice. For cases where it's necessary to apply a plugin to Worker code, use the `plugins` option.
 
 Here you can specify the names of plugins to "copy" from your existing Webpack configuration, or provide specific plugins to apply only to worker code:
 
@@ -114,6 +116,32 @@ module.exports = {
   <...>
 }
 ```
+
+### `preserveTypeModule` _(boolean)_
+### `workerType` _(string)_
+
+Normally, WorkerPlugin will transform `new Worker('./a.js', { type: 'module' })` to completely remove the `type` option, outputting something like `new Worker('a.worker.js')`. This allows the plugin to compile Module Workers to Classic Workers, which are supported in all browsers.
+
+To instead retain `{type:'module'}` in bundled output, set the `preserveTypeModule` option to `true`:
+
+```js
+  plugins: [
+    new WorkerPlugin({
+      preserveTypeModule: true
+    })
+  ]
+```
+
+Similarly, if you need to have WorkerPlugin output a specific `type` value, use the `workerType` option to spefify it:
+
+```js
+  plugins: [
+    new WorkerPlugin({
+      workerType: 'foo'  // note: this isn't a thing!
+    })
+  ]
+```
+
 
 ## License
 
