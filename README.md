@@ -15,7 +15,7 @@ const worker = new Worker('./foo.js', { type: 'module' });
                           gets bundled using webpack
 ```
 
-The best part? That worker constructor works just fine without bundling turned on too.
+The best part? That worker constructor works just fine without bundling turned on, but when bundled the result is **supported in all browsers** that support Web Workers - all the way back to IE 10!
 
 Workers created from Blob & data URLs or without the `{ type:'module' }` option are left unchanged.
 
