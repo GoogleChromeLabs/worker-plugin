@@ -84,8 +84,11 @@ export default class WorkerPlugin {
 
             return ParserHelpers.addParsedVariableToModule(parser, id, req);
           };
+          
           parser.hooks.new.for('Worker').tap(NAME, handleWorker('Worker'));
-          parser.hooks.new.for('SharedWorker').tap(NAME, handleWorker('SharedWorker'));
+          if (this.options.sharedWorker !== false) {
+            parser.hooks.new.for('SharedWorker').tap(NAME, handleWorker('SharedWorker'));
+          }
         });
       }
     });
