@@ -38,7 +38,7 @@ describe('worker-plugin', () => {
 
     const assetNames = Object.keys(stats.assets);
     expect(assetNames).toHaveLength(2);
-    expect(assetNames).toContainEqual('0.worker.js');
+    expect(assetNames).toContainEqual('w0.worker.js');
 
     const main = stats.assets['main.js'];
     expect(main).toMatch(/[^\n]*new\s+Worker\s*\([^)]*\)[^\n]*/g);
@@ -56,7 +56,7 @@ describe('worker-plugin', () => {
       /new\s+Worker\s*\(\s*__webpack__worker__\d\s*(,\s*\{\s+type\:\svoid [0]\s+\}\s*)?\)/g
     );
 
-    expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"0\.worker\.js"/g);
+    expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"w0\.worker\.js"/g);
   });
 
   test('it replaces multiple Worker exports with __webpack_require__', async () => {
@@ -68,12 +68,12 @@ describe('worker-plugin', () => {
 
     const assetNames = Object.keys(stats.assets);
     expect(assetNames).toHaveLength(3);
-    expect(assetNames).toContainEqual('0.worker.js');
-    expect(assetNames).toContainEqual('1.worker.js');
+    expect(assetNames).toContainEqual('w0.worker.js');
+    expect(assetNames).toContainEqual('w1.worker.js');
 
     const main = stats.assets['main.js'];
-    expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"0\.worker\.js"/g);
-    expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"1\.worker\.js"/g);
+    expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"w0\.worker\.js"/g);
+    expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"w1\.worker\.js"/g);
   });
 
   test('retainModule:true leaves {type:module} in worker init', async () => {
@@ -248,8 +248,8 @@ describe('worker-plugin', () => {
           await sleep(1000);
           stats = await ready;
           await sleep(1000);
-          expect(Object.keys(stats.assets).sort()).toEqual(['0.worker.js', 'main.js']);
-          expect(stats.assets['0.worker.js']).toContain(`hello from worker ${i}`);
+          expect(Object.keys(stats.assets).sort()).toEqual(['main.js', 'w0.worker.js']);
+          expect(stats.assets['w0.worker.js']).toContain(`hello from worker ${i}`);
         }
       } finally {
         watcher.close();
