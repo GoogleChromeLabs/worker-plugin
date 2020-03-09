@@ -29,7 +29,8 @@ export function pitch (request) {
 
   const compilerOptions = this._compiler.options || {};
 
-  const pluginOptions = compilerOptions.plugins.find(p => p[WORKER_PLUGIN_SYMBOL]).options;
+  const plugin = compilerOptions.plugins.find(p => p[WORKER_PLUGIN_SYMBOL]) || {};
+  const pluginOptions = plugin && plugin.options || {};
 
   if (pluginOptions.globalObject == null && !hasWarned && compilerOptions.output && compilerOptions.output.globalObject === 'window') {
     hasWarned = true;
@@ -78,7 +79,7 @@ export function pitch (request) {
     const entry = entries && entries[0] && entries[0].files[0];
     if (!err && !entry) err = Error(`WorkerPlugin: no entry for ${request}`);
     if (err) return cb(err);
-    return cb(null, `module.exports = __webpack_public_path__ + ${JSON.stringify(entry)}`);
+    return cb(null, `${options.esModule ? 'export default' : 'module.exports ='} __webpack_public_path__ + ${JSON.stringify(entry)}`);
   });
 };
 
