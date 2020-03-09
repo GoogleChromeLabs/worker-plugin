@@ -200,7 +200,7 @@ describe('worker-plugin', () => {
       expect(main).toMatch(/[^\n]*console.log\s*\([^)]*\)[^\n]*/g);
 
       const log = main.match(/\bconsole\.log\s*\(([^)]*)\)[^\n]*/)[1];
-      expect(log).toMatch(/__webpack__worker__\d\)/g);
+      expect(log).toMatch(/worker_plugin_loader_worker__WEBPACK_IMPORTED_MODULE_\d___default.[a-z0-9]+/gi);
 
       expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"0\.worker\.js"/g);
     });
