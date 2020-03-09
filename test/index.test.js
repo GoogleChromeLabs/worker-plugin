@@ -181,6 +181,24 @@ describe('worker-plugin', () => {
 
     expect(stats.assets['main.js']).toMatch(/new\s+Worker\s*\(\s*new\s+Blob\s*\(\s*\[\s*'onmessage=\(\)=>\{postMessage\("right back at ya"\)\}'\s*\]\s*\)\s*\)/g);
   });
+  
+  describe('worker-plugin/loader', () => {
+    test('it returns a URL when applied to an import', async () => {
+      const stats = await runWebpack('loader');
+
+      const assetNames = Object.keys(stats.assets);
+      expect(assetNames).toHaveLength(2);
+      expect(assetNames).toContainEqual('0.worker.js');
+
+      const main = stats.assets['main.js'];
+      expect(main).toMatch(/[^\n]*console.log\s*\([^)]*\)[^\n]*/g);
+
+      const log = main.match(/\bconsole\.log\s*\(([^)]*)\)[^\n]*/)[1];
+      expect(log).toMatch(/__webpack__worker__\d\)/g);
+
+      expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"0\.worker\.js"/g);
+    });
+  });
 
   describe('watch mode', () => {
     const workerFile = resolve(__dirname, 'fixtures', 'watch', 'worker.js');
