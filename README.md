@@ -164,12 +164,32 @@ console.log(workerUrl); // "/0.worker.js"
 CSS.paintWorklet.addModule(workerUrl);
 ```
 
-Two options are available: (`worker-plugin/loader?name=x&esModule!./foo`)
+Two options are available:
 
 | Option | Type | Description
 |---|---|:--|
 | `name` | _string_ | Controls the name of the generated chunk.<br>The name is used to generate a URL according to  `output.chunkFilename`.
 | `esModule` | _boolean_ | Export the URL from an ES Module (`export default url`).<br>The default is CommonJS (`module.exports = url`).
+
+Options can be supplied inline:
+
+```js
+import url from 'worker-plugin/loader?name=foo&esModule!./foo';
+```
+
+... or by setting up a loader alias:
+
+```js
+// webpack.config.js to enable this:
+// import url from 'worker!./foo';
+{
+  resolveLoader: {
+    alias: {
+      worker: 'worker-plugin/loader?esModule'
+    }
+  }
+}
+```
 
 
 ## License
