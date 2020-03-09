@@ -184,7 +184,13 @@ describe('worker-plugin', () => {
   
   describe('worker-plugin/loader', () => {
     test('it returns a URL when applied to an import', async () => {
-      const stats = await runWebpack('loader');
+      const stats = await runWebpack('loader', {
+        resolveLoader: {
+          alias: {
+            'worker-plugin/loader': resolve(__dirname, '../loader.js')
+          }
+        }
+      });
 
       const assetNames = Object.keys(stats.assets);
       expect(assetNames).toHaveLength(2);
