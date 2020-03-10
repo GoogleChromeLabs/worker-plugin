@@ -193,7 +193,7 @@ describe('worker-plugin', () => {
 
       const assetNames = Object.keys(stats.assets);
       expect(assetNames).toHaveLength(2);
-      expect(assetNames).toContainEqual('0.worker.js');
+      expect(assetNames).toContainEqual('w0.worker.js');
 
       const main = stats.assets['main.js'];
       expect(main).toMatch(/[^\n]*new Worker\s*\([^)]*\)[^\n]*/g);
@@ -202,7 +202,7 @@ describe('worker-plugin', () => {
       expect(log).toMatch(/_worker__WEBPACK_IMPORTED_MODULE_\d__\["default"\]/gi);
 
       // should also put the loader into ESM mode:
-      expect(main).toMatch(/__webpack_exports__\["default"\]\s*=\s*\(?\s*__webpack_require__\.p\s*\+\s*"0\.worker\.js"\)?;?/g);
+      expect(main).toMatch(/__webpack_exports__\["default"\]\s*=\s*\(?\s*__webpack_require__\.p\s*\+\s*"w0\.worker\.js"\)?;?/g);
       // the output (in dev mode) looks like this:
       //   /* harmony default export */ __webpack_exports__[\"default\"] = (__webpack_require__.p + \"0.worker.js\");
     });
@@ -221,13 +221,13 @@ describe('worker-plugin', () => {
 
       const assetNames = Object.keys(stats.assets);
       expect(assetNames).toHaveLength(2);
-      expect(assetNames).toContainEqual('0.worker.js');
+      expect(assetNames).toContainEqual('w0.worker.js');
 
       const main = stats.assets['main.js'];
       expect(main).toMatch(/[^\n]*new Worker\s*\([^)]*\)[^\n]*/g);
 
       const log = main.match(/new Worker\s*\(([^)]*)\)[^\n]*/)[1];
-      expect(log).toMatch(/^[a-z0-9$_]+\.p\s*\+\s*(['"])0\.worker\.js\1/gi);
+      expect(log).toMatch(/^[a-z0-9$_]+\.p\s*\+\s*(['"])w0\.worker\.js\1/gi);
 
       // shouldn't be any trace of the intermediary url provider module left
       expect(main).not.toMatch(/export default/g);
