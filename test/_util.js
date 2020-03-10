@@ -23,12 +23,12 @@ export function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export function runWebpack (fixture, { output, plugins, ...config } = {}) {
+export function runWebpack (fixture, { output, plugins, terserOptions, ...config } = {}) {
   return run(callback => webpack({
     mode: 'production',
     devtool: false,
     context: path.resolve(__dirname, 'fixtures', fixture),
-    entry: './entry.js',
+    entry: './entry',
     output: {
       publicPath: 'dist/',
       path: path.resolve(__dirname, 'fixtures', fixture, 'dist'),
@@ -37,7 +37,7 @@ export function runWebpack (fixture, { output, plugins, ...config } = {}) {
     optimization: {
       minimizer: [
         new TerserPlugin({
-          terserOptions: {
+          terserOptions: terserOptions || {
             mangle: false,
             output: {
               beautify: true
@@ -56,7 +56,7 @@ export function runWebpack (fixture, { output, plugins, ...config } = {}) {
   }, callback));
 }
 
-export function watchWebpack (fixture, { output, plugins, context, ...config } = {}) {
+export function watchWebpack (fixture, { output, plugins, context, terserOptions, ...config } = {}) {
   context = context || path.resolve(__dirname, 'fixtures', fixture);
   const compiler = webpack({
     mode: 'production',
@@ -71,7 +71,7 @@ export function watchWebpack (fixture, { output, plugins, context, ...config } =
       minimize: true,
       minimizer: [
         new TerserPlugin({
-          terserOptions: {
+          terserOptions: terserOptions || {
             mangle: false,
             output: {
               beautify: true
