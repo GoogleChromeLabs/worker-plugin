@@ -182,6 +182,82 @@ describe('worker-plugin', () => {
     expect(stats.assets['main.js']).toMatch(/new\s+Worker\s*\(\s*new\s+Blob\s*\(\s*\[\s*'onmessage=\(\)=>\{postMessage\("right back at ya"\)\}'\s*\]\s*\)\s*\)/g);
   });
 
+  describe('ESM strict mode', () => {
+    test('it should work in strict ESM mode', async () => {
+      const stats = await runWebpack('strict', {
+        plugins: [
+          new WorkerPlugin()
+        ],
+        mode: 'development'
+      });
+
+      const assetNames = Object.keys(stats.assets);
+      expect(assetNames).toHaveLength(2);
+      expect(assetNames).toContainEqual('0.worker.js');
+
+      const main = stats.assets['main.js'];
+      expect(main).toMatch(/[^\n]*new Worker\s*\([^)]*\)[^\n]*/g);
+
+      const log = main.match(/new Worker\s*\(([^)]*)\)[^\n]*/)[1];
+      expect(log).toMatch(/_worker__WEBPACK_IMPORTED_MODULE_\d__\["default"\]/gi);
+
+      // should also put the loader into ESM mode:
+      expect(main).toMatch(/__webpack_exports__\["default"\]\s*=\s*\(?\s*__webpack_require__\.p\s*\+\s*"0\.worker\.js"\)?;?/g);
+      // the output (in dev mode) looks like this:
+      //   /* harmony default export */ __webpack_exports__[\"default\"] = (__webpack_require__.p + \"0.worker.js\");
+    });
+
+    test('it should inline for production', async () => {
+      const stats = await runWebpack('strict', {
+        plugins: [
+          new WorkerPlugin()
+        ],
+        terserOptions: {
+          compress: {
+            pure_getters: true
+          }
+        }
+      });
+
+      const assetNames = Object.keys(stats.assets);
+      expect(assetNames).toHaveLength(2);
+      expect(assetNames).toContainEqual('0.worker.js');
+
+      const main = stats.assets['main.js'];
+      expect(main).toMatch(/[^\n]*new Worker\s*\([^)]*\)[^\n]*/g);
+
+      const log = main.match(/new Worker\s*\(([^)]*)\)[^\n]*/)[1];
+      expect(log).toMatch(/^[a-z0-9$_]+\.p\s*\+\s*(['"])0\.worker\.js\1/gi);
+
+      // shouldn't be any trace of the intermediary url provider module left
+      expect(main).not.toMatch(/export default/g);
+    });
+  });
+
+  describe('worker-plugin/loader', () => {
+    test('it returns a URL when applied to an import', async () => {
+      const stats = await runWebpack('loader', {
+        resolveLoader: {
+          alias: {
+            'worker-plugin/loader': resolve(__dirname, '../loader.js')
+          }
+        }
+      });
+
+      const assetNames = Object.keys(stats.assets);
+      expect(assetNames).toHaveLength(2);
+      expect(assetNames).toContainEqual('0.worker.js');
+
+      const main = stats.assets['main.js'];
+      expect(main).toMatch(/[^\n]*console.log\s*\([^)]*\)[^\n]*/g);
+
+      const log = main.match(/\bconsole\.log\s*\(([^)]*)\)[^\n]*/)[1];
+      expect(log).toMatch(/worker_plugin_loader_worker__WEBPACK_IMPORTED_MODULE_\d___default.[a-z0-9]+/gi);
+
+      expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"0\.worker\.js"/g);
+    });
+  });
+
   describe('watch mode', () => {
     const workerFile = resolve(__dirname, 'fixtures', 'watch', 'worker.js');
     const workerCode = readFileSync(workerFile, 'utf-8');

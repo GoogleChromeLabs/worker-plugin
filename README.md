@@ -154,6 +154,47 @@ Similarly, if you need to have WorkerPlugin output a specific `type` value, use 
   ]
 ```
 
+## Loader
+
+At its core, worker-plugin provides two features: parsing and handling of `new Worker()`, and standalone bundling of modules for use in a different JavaScript context.
+
+If all you want is to compile separate bundles for a module, `worker-plugin/loader` provides the bundling functionality of worker-plugin as a standalone Webpack loader. This is useful for generating bundles for use in iframes, Service Workers or Worklets. Applying `worker-plugin/loader` to an import will bundle that module and return its URL:
+
+```js
+import workerUrl from 'worker-plugin/loader!./my-worker';
+
+console.log(workerUrl); // "/0.worker.js"
+
+CSS.paintWorklet.addModule(workerUrl);
+```
+
+Two options are available:
+
+| Option | Type | Description
+|---|---|:--|
+| `name` | _string_ | Controls the name of the generated chunk.<br>The name is used to generate a URL according to  `output.chunkFilename`.
+| `esModule` | _boolean_ | Export the URL from an ES Module (`export default url`).<br>The default is CommonJS (`module.exports = url`).
+
+Options can be supplied inline:
+
+```js
+import url from 'worker-plugin/loader?name=foo&esModule!./foo';
+```
+
+... or by setting up a loader alias:
+
+```js
+// webpack.config.js to enable this:
+// import url from 'worker!./foo';
+{
+  resolveLoader: {
+    alias: {
+      worker: 'worker-plugin/loader?esModule'
+    }
+  }
+}
+```
+
 
 ## License
 

@@ -15,11 +15,14 @@
  */
 
 import path from 'path';
-import ParserHelpers from 'webpack/lib/ParserHelpers';
 import WORKER_PLUGIN_SYMBOL from './symbol';
+import ParserHelpers from 'webpack/lib/ParserHelpers';
+let HarmonyImportSpecifierDependency;
+try {
+  HarmonyImportSpecifierDependency = require('webpack/lib/dependencies/HarmonyImportSpecifierDependency');
+} catch (e) {}
 
 const NAME = 'WorkerPlugin';
-const JS_TYPES = ['auto', 'esm', 'dynamic'];
 const workerLoader = path.resolve(__dirname, 'loader.js');
 
 export default class WorkerPlugin {
@@ -31,68 +34,109 @@ export default class WorkerPlugin {
   apply (compiler) {
     compiler.hooks.normalModuleFactory.tap(NAME, factory => {
       let workerId = 0;
-      for (const type of JS_TYPES) {
-        factory.hooks.parser.for(`javascript/${type}`).tap(NAME, parser => {
-          const handleWorker = workerTypeString => expr => {
-            const dep = parser.evaluateExpression(expr.arguments[0]);
+      factory.hooks.parser.for('javascript/auto').tap(NAME, parser => parse(parser, false));
+      factory.hooks.parser.for('javascript/dynamic').tap(NAME, parser => parse(parser, false));
+      factory.hooks.parser.for('javascript/esm').tap(NAME, parser => parse(parser, true));
 
-            if (!dep.isString()) {
-              parser.state.module.warnings.push({
-                message: `new ${workerTypeString}() will only be bundled if passed a String.`
-              });
-              return false;
-            }
+      const parse = (parser, esModule) => {
+        const handleWorker = workerTypeString => expr => {
+          const dep = parser.evaluateExpression(expr.arguments[0]);
 
-            const optsExpr = expr.arguments[1];
-            let typeModuleExpr;
-            let opts;
-            if (optsExpr) {
-              opts = {};
-              for (let i = optsExpr.properties.length; i--;) {
-                const prop = optsExpr.properties[i];
-                if (prop.type === 'Property' && !prop.computed && !prop.shorthand && !prop.method) {
-                  opts[prop.key.name] = parser.evaluateExpression(prop.value).string;
+          if (!dep.isString()) {
+            parser.state.module.warnings.push({
+              message: `new ${workerTypeString}() will only be bundled if passed a String.`
+            });
+            return false;
+          }
 
-                  if (prop.key.name === 'type') {
-                    typeModuleExpr = prop;
-                  }
+          const optsExpr = expr.arguments[1];
+          let hasInitOptions = false;
+          let typeModuleExpr;
+          let opts;
+          if (optsExpr) {
+            opts = {};
+            for (let i = optsExpr.properties.length; i--;) {
+              const prop = optsExpr.properties[i];
+              if (prop.type === 'Property' && !prop.computed && !prop.shorthand && !prop.method) {
+                opts[prop.key.name] = parser.evaluateExpression(prop.value).string;
+
+                if (prop.key.name === 'type') {
+                  typeModuleExpr = prop;
+                } else {
+                  hasInitOptions = true;
                 }
               }
             }
+          }
 
-            if (!opts || opts.type !== 'module') {
-              parser.state.module.warnings.push({
-                message: `new ${workerTypeString}() will only be bundled if passed options that include { type: 'module' }.${opts ? `\n  Received: new ${workerTypeString}()(${JSON.stringify(dep.string)}, ${JSON.stringify(opts)})` : ''}`
-              });
-              return false;
+          if (!opts || opts.type !== 'module') {
+            parser.state.module.warnings.push({
+              message: `new ${workerTypeString}() will only be bundled if passed options that include { type: 'module' }.${opts ? `\n  Received: new ${workerTypeString}()(${JSON.stringify(dep.string)}, ${JSON.stringify(opts)})` : ''}`
+            });
+            return false;
+          }
+
+          const isStrictModule = esModule || (parser.state.buildMeta && parser.state.buildMeta.strictHarmonyModule);
+
+          // Querystring-encoded loader prefix (faster/cleaner than JSON parameters):
+          const loaderRequest = `${workerLoader}?name=${encodeURIComponent(opts.name || workerId)}${isStrictModule ? '&esModule' : ''}!${dep.string}`;
+
+          // Unique ID for the worker URL variable:
+          const id = `__webpack__worker__${workerId++}`;
+
+          // .mjs / strict harmony mode
+          if (isStrictModule) {
+            const module = parser.state.current;
+
+            if (!HarmonyImportSpecifierDependency) {
+              throw Error(`${NAME}: Failed to import HarmonyImportSpecifierDependency. This plugin requires Webpack version 4.`);
             }
 
-            const loaderOptions = { name: opts.name || workerId + '' };
-            const req = `require(${JSON.stringify(workerLoader + '?' + JSON.stringify(loaderOptions) + '!' + dep.string)})`;
-            const id = `__webpack__worker__${workerId++}`;
+            // This is essentially the internals of "prepend an import to the module":
+            const dependency = new HarmonyImportSpecifierDependency(
+              loaderRequest,
+              module,
+              workerId, // no idea if this actually needs to be unique. 0 seemed to work. safety first?
+              parser.scope,
+              'default',
+              id, // this never gets used
+              expr.arguments[0].range, // replace the usage/callsite with the generated reference: X_IMPORT_0["default"]
+              true
+            );
+            // avoid serializing the full loader filepath: (this gets prepended to unique suffix)
+            dependency.userRequest = dep.string;
+
+            module.addDependency(dependency);
+          } else {
+            // For CommonJS/Auto
+            const req = `require(${JSON.stringify(loaderRequest)})`;
             ParserHelpers.toConstantDependency(parser, id)(expr.arguments[0]);
+            ParserHelpers.addParsedVariableToModule(parser, id, req);
+          }
 
-            if (this.options.workerType) {
-              ParserHelpers.toConstantDependency(parser, JSON.stringify(this.options.workerType))(typeModuleExpr.value);
-            } else if (this.options.preserveTypeModule !== true) {
-              // Options object can contain comma at the end e.g. `{ type: 'module', }`.
-              // Previously, `type` property was replaced with an empty string
-              // that left this comma.
-              // Currently the `type` property value is replaced with `undefined`.
+          // update/remove the WorkerInitOptions argument
+          if (this.options.workerType) {
+            ParserHelpers.toConstantDependency(parser, JSON.stringify(this.options.workerType))(typeModuleExpr.value);
+          } else if (this.options.preserveTypeModule !== true) {
+            if (hasInitOptions) {
+              // there might be other options - to avoid trailing comma issues, replace the type value with undefined but *leave the key*:
               ParserHelpers.toConstantDependency(parser, 'type:undefined')(typeModuleExpr);
+            } else {
+              // there was only a `{type}` option, so we can remove the whole second argument:
+              ParserHelpers.toConstantDependency(parser, '')(optsExpr);
             }
+          }
 
-            return ParserHelpers.addParsedVariableToModule(parser, id, req);
-          };
-          
-          if (this.options.worker !== false) {
-            parser.hooks.new.for('Worker').tap(NAME, handleWorker('Worker'));
-          }
-          if (this.options.sharedWorker) {
-            parser.hooks.new.for('SharedWorker').tap(NAME, handleWorker('SharedWorker'));
-          }
-        });
-      }
+          return true;
+        };
+
+        if (this.options.worker !== false) {
+          parser.hooks.new.for('Worker').tap(NAME, handleWorker('Worker'));
+        }
+        if (this.options.sharedWorker) {
+          parser.hooks.new.for('SharedWorker').tap(NAME, handleWorker('SharedWorker'));
+        }
+      };
     });
   }
 }
