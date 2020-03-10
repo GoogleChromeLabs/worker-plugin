@@ -125,6 +125,10 @@ If set to `true`, this option enables the bundling of [SharedWorker](https://dev
 const shared = new SharedWorker('./my-shared-worker.js', { type: 'module' });
 ```
 
+### `worker` _(boolean)_
+
+If set to `false`, this option disables the bundling of [Worker]. Intended to be used with `{ sharedWorker: true }` to allow bundling of [SharedWorker] only without also bundling [Worker].
+
 ### `preserveTypeModule` _(boolean)_
 ### `workerType` _(string)_
 
