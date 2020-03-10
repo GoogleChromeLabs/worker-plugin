@@ -41,7 +41,8 @@
   },
   "files": [
     "src",
-    "dist"
+    "dist",
+    "loader.js"
   ],
   "keywords": [
     "webpack",
