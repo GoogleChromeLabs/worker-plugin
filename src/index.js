@@ -85,7 +85,7 @@ export default class WorkerPlugin {
             return ParserHelpers.addParsedVariableToModule(parser, id, req);
           };
           
-          if (this.options.worker === undefined || this.options.worker) {
+          if (this.options.worker !== false) {
             parser.hooks.new.for('Worker').tap(NAME, handleWorker('Worker'));
           }
           if (this.options.sharedWorker) {
