@@ -38,7 +38,7 @@ describe('worker-plugin', () => {
 
     const assetNames = Object.keys(stats.assets);
     expect(assetNames).toHaveLength(2);
-    expect(assetNames).toContainEqual('w0.worker.js');
+    expect(assetNames).toContainEqual('0.worker.js');
 
     const main = stats.assets['main.js'];
     expect(main).toMatch(/[^\n]*new\s+Worker\s*\([^)]*\)[^\n]*/g);
@@ -56,7 +56,7 @@ describe('worker-plugin', () => {
       /new\s+Worker\s*\(\s*__webpack__worker__\d\s*(,\s*\{\s+type\:\svoid [0]\s+\}\s*)?\)/g
     );
 
-    expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"w0\.worker\.js"/g);
+    expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"0\.worker\.js"/g);
   });
 
   test('it replaces multiple Worker exports with __webpack_require__', async () => {
@@ -68,12 +68,12 @@ describe('worker-plugin', () => {
 
     const assetNames = Object.keys(stats.assets);
     expect(assetNames).toHaveLength(3);
-    expect(assetNames).toContainEqual('w0.worker.js');
-    expect(assetNames).toContainEqual('w1.worker.js');
+    expect(assetNames).toContainEqual('0.worker.js');
+    expect(assetNames).toContainEqual('1.worker.js');
 
     const main = stats.assets['main.js'];
-    expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"w0\.worker\.js"/g);
-    expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"w1\.worker\.js"/g);
+    expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"0\.worker\.js"/g);
+    expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"1\.worker\.js"/g);
   });
 
   test('retainModule:true leaves {type:module} in worker init', async () => {
@@ -150,8 +150,8 @@ describe('worker-plugin', () => {
 
     const assetNames = Object.keys(stats.assets);
     expect(assetNames).toHaveLength(2);
-    expect(assetNames).toContainEqual(expect.stringMatching(/^foo\.[a-zA-Z0-9]+\.worker\.js$/));
-    expect(stats.assets['main.js']).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"foo\.[a-zA-Z0-9]+\.worker\.js"/g);
+    expect(assetNames).toContainEqual(expect.stringMatching(/^foo\.worker\.[a-zA-Z0-9]+\.js$/));
+    expect(stats.assets['main.js']).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"foo\.worker\.[a-zA-Z0-9]+\.js"/g);
   });
 
   test('it bundles WASM file which imported dynamically', async () => {
@@ -193,7 +193,7 @@ describe('worker-plugin', () => {
 
       const assetNames = Object.keys(stats.assets);
       expect(assetNames).toHaveLength(2);
-      expect(assetNames).toContainEqual('w0.worker.js');
+      expect(assetNames).toContainEqual('0.worker.js');
 
       const main = stats.assets['main.js'];
       expect(main).toMatch(/[^\n]*new Worker\s*\([^)]*\)[^\n]*/g);
@@ -202,7 +202,7 @@ describe('worker-plugin', () => {
       expect(log).toMatch(/_worker__WEBPACK_IMPORTED_MODULE_\d__\["default"\]/gi);
 
       // should also put the loader into ESM mode:
-      expect(main).toMatch(/__webpack_exports__\["default"\]\s*=\s*\(?\s*__webpack_require__\.p\s*\+\s*"w0\.worker\.js"\)?;?/g);
+      expect(main).toMatch(/__webpack_exports__\["default"\]\s*=\s*\(?\s*__webpack_require__\.p\s*\+\s*"0\.worker\.js"\)?;?/g);
       // the output (in dev mode) looks like this:
       //   /* harmony default export */ __webpack_exports__[\"default\"] = (__webpack_require__.p + \"0.worker.js\");
     });
@@ -221,13 +221,13 @@ describe('worker-plugin', () => {
 
       const assetNames = Object.keys(stats.assets);
       expect(assetNames).toHaveLength(2);
-      expect(assetNames).toContainEqual('w0.worker.js');
+      expect(assetNames).toContainEqual('0.worker.js');
 
       const main = stats.assets['main.js'];
       expect(main).toMatch(/[^\n]*new Worker\s*\([^)]*\)[^\n]*/g);
 
       const log = main.match(/new Worker\s*\(([^)]*)\)[^\n]*/)[1];
-      expect(log).toMatch(/^[a-z0-9$_]+\.p\s*\+\s*(['"])w0\.worker\.js\1/gi);
+      expect(log).toMatch(/^[a-z0-9$_]+\.p\s*\+\s*(['"])0\.worker\.js\1/gi);
 
       // shouldn't be any trace of the intermediary url provider module left
       expect(main).not.toMatch(/export default/g);
@@ -246,7 +246,7 @@ describe('worker-plugin', () => {
 
       const assetNames = Object.keys(stats.assets);
       expect(assetNames).toHaveLength(2);
-      expect(assetNames).toContainEqual('0.worker.js');
+      expect(assetNames).toContainEqual('worker.js');
 
       const main = stats.assets['main.js'];
       expect(main).toMatch(/[^\n]*console.log\s*\([^)]*\)[^\n]*/g);
@@ -254,7 +254,7 @@ describe('worker-plugin', () => {
       const log = main.match(/\bconsole\.log\s*\(([^)]*)\)[^\n]*/)[1];
       expect(log).toMatch(/worker_plugin_loader_worker__WEBPACK_IMPORTED_MODULE_\d___default.[a-z0-9]+/gi);
 
-      expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"0\.worker\.js"/g);
+      expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"worker\.js"/g);
     });
   });
 
@@ -300,8 +300,8 @@ describe('worker-plugin', () => {
           await sleep(1000);
           stats = await ready;
           await sleep(1000);
-          expect(Object.keys(stats.assets).sort()).toEqual(['main.js', 'w0.worker.js']);
-          expect(stats.assets['w0.worker.js']).toContain(`hello from worker ${i}`);
+          expect(Object.keys(stats.assets).sort()).toEqual(['0.worker.js', 'main.js']);
+          expect(stats.assets['0.worker.js']).toContain(`hello from worker ${i}`);
         }
       } finally {
         watcher.close();
