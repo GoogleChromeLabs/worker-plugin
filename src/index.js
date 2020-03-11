@@ -131,7 +131,9 @@ export default class WorkerPlugin {
           return true;
         };
 
-        parser.hooks.new.for('Worker').tap(NAME, handleWorker('Worker'));
+        if (this.options.worker !== false) {
+          parser.hooks.new.for('Worker').tap(NAME, handleWorker('Worker'));
+        }
         if (this.options.sharedWorker) {
           parser.hooks.new.for('SharedWorker').tap(NAME, handleWorker('SharedWorker'));
         }
