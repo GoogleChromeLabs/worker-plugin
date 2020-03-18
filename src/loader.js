@@ -19,6 +19,8 @@ import SingleEntryPlugin from 'webpack/lib/SingleEntryPlugin';
 import WebWorkerTemplatePlugin from 'webpack/lib/webworker/WebWorkerTemplatePlugin';
 import FetchCompileWasmTemplatePlugin from 'webpack/lib/web/FetchCompileWasmTemplatePlugin';
 import JsonpTemplatePlugin from 'webpack/lib/web/JsonpTemplatePlugin'
+import SplitChunksPlugin from 'webpack/lib/optimize/SplitChunksPlugin'
+import { ConcatSource } from 'webpack-sources'
 import WORKER_PLUGIN_SYMBOL from './symbol';
 
 const NAME = 'WorkerPluginLoader';
@@ -60,7 +62,12 @@ export function pitch (request) {
   const workerCompiler = this._compilation.createChildCompiler(NAME, workerOptions, plugins);
   workerCompiler.context = this._compiler.context;
   
-  (new JsonpTemplatePlugin()).apply(workerCompiler)
+  const splitChunks = compilerOptions.optimization && compilerOptions.optimization.splitChunks
+  if (splitChunks) {
+    (new SplitChunksPlugin(splitChunks)).apply(workerCompiler);
+  }
+  
+  (new JsonpTemplatePlugin()).apply(workerCompiler);
   (new WebWorkerTemplatePlugin(workerOptions)).apply(workerCompiler);
   (new FetchCompileWasmTemplatePlugin({
     mangleImports: compilerOptions.optimization.mangleWasmImports
@@ -83,10 +90,10 @@ export function pitch (request) {
       if (uniqueFiles.length) {
         // Sort to ensure the output is predictable.
         uniqueFiles.sort();
-        const file = chunks.find(c => c.name === options.name).files[0]
-        compilation.assets[file] = new ConcatSource(uniqueFiles.map(chunk => `importScripts(${JSON.stringify(chunk)});`).join('\n'), compilation.assets[file])
+        const file = chunks.find(c => c.name === options.name).files[0];
+        compilation.assets[file] = new ConcatSource(uniqueFiles.map(chunk => `importScripts(${JSON.stringify(chunk)});`).join('\n'), compilation.assets[file]);
       }
-      callback()
+      callback();
     })
   });
 
