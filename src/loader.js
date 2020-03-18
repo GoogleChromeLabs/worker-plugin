@@ -91,8 +91,9 @@ export function pitch (request) {
         // Sort to ensure the output is predictable.
         uniqueFiles.sort();
         const file = chunks.find(c => c.name === options.name).files[0];
-        compilation.assets[file] = new ConcatSource(uniqueFiles.map(chunk => `importScripts(${JSON.stringify(chunk)});`).join('\n'), compilation.assets[file]);
+        compilation.assets[file] = new ConcatSource(`importScripts(${uniqueFiles.map(chunk => `${JSON.stringify(chunk)}`).join(', ')});\n\n`, compilation.assets[file]);
       }
+
       callback();
     })
   });
