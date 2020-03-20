@@ -39,6 +39,8 @@ module.exports = {
 }
 ```
 
+> **Note:** If you're planning on having more than one worker, you'll need to make sure [`output.filename`](https://webpack.js.org/configuration/output/#outputfilename) is set to something dynamic, e.g. `"[name].bundle.js"` otherwise the generated filenames will overwrite one another. 
+
 ## Usage
 
 **worker.js**: _(our worker module)_
