@@ -42,20 +42,6 @@ describe('worker-plugin', () => {
 
     const main = stats.assets['main.js'];
     expect(main).toMatch(/[^\n]*new\s+Worker\s*\([^)]*\)[^\n]*/g);
-
-    const workerInit = main.match(/[^\n]*new\s+Worker\s*\([^)]*\)[^\n]*/g)[0];
-    // As it replaces the value of the `type` property with `undefined`
-    // it will emit a string that contains line breaks, like:
-    // `{\n type: void 0 \n}`.
-    // We have to replace those line breaks thus it will become
-    // one-line string, like:
-    // `const worker = new Worker(__webpack__worker__0, { type: void 0 });`
-    const workerInitWithoutLineBreak = workerInit.replace(/\n/g, '');
-    // Match also the `type: void 0` string
-    expect(workerInitWithoutLineBreak).toMatch(
-      /new\s+Worker\s*\(\s*__webpack__worker__\d\s*(,\s*\{\s+type\:\svoid [0]\s+\}\s*)?\)/g
-    );
-
     expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"0\.worker\.js"/g);
   });
 
@@ -232,6 +218,31 @@ describe('worker-plugin', () => {
       // shouldn't be any trace of the intermediary url provider module left
       expect(main).not.toMatch(/export default/g);
     });
+  });
+
+  test('should not emit trailing commas', async () => {
+    const stats = await runWebpack('no-trailing-comma', {
+      plugins: [
+        new WorkerPlugin()
+      ],
+    });
+
+    const assetNames = Object.keys(stats.assets);
+    expect(assetNames).toHaveLength(3);
+
+    // As it replaces the value of the `type` property with `undefined`
+    // it will emit a string that contains line breaks, like:
+    // `{\n type: void 0 \n}`.
+    // We have to replace those line breaks thus it will become one-line string, like:
+    const main = stats.assets['main.js'].replace(/\n/g, '');
+
+    // Verify that we replace the second parameter when it's `{ type: module }` with `undefined`
+    // and there are no trailing commas.
+    // Match `new Worker(__webpack__worker__0, { type: void 0 })`
+    expect(main).toMatch(/new Worker\s*\(__webpack__worker__\d, void 0\)/);
+
+    // Match `new Worker(__webpack__worker__0, { type: void 0, name: "foo" })`
+    expect(main).toMatch(/new Worker\s*\(__webpack__worker__\d, {\s*type\: void 0,\s*name\: "foo"\s*}\)/);
   });
 
   describe('worker-plugin/loader', () => {
