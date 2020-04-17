@@ -122,8 +122,8 @@ export default class WorkerPlugin {
               // there might be other options - to avoid trailing comma issues, replace the type value with undefined but *leave the key*:
               ParserHelpers.toConstantDependency(parser, 'type:undefined')(typeModuleExpr);
             } else {
-              // there was only a `{type}` option, so we can remove the whole second argument:
-              ParserHelpers.toConstantDependency(parser, '')(optsExpr);
+              // there was only a `{type}` option, we replace the opts argument with undefined to avoid trailing comma issues:
+              ParserHelpers.toConstantDependency(parser, 'undefined')(optsExpr);
             }
           }
 
