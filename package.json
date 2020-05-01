@@ -74,7 +74,7 @@
     "jest": "^23.6.0",
     "memory-fs": "^0.4.1",
     "microbundle": "^0.8.2",
-    "puppeteer": "^1.11.0",
+    "puppeteer": "^3.0.2",
     "serve-handler": "^5.0.7",
     "terser-webpack-plugin": "^1.1.0",
     "webpack": "^4.26.1"
