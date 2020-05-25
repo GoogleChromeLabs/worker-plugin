@@ -16,7 +16,13 @@
 
 import path from 'path';
 import WORKER_PLUGIN_SYMBOL from './symbol';
-import ParserHelpers from 'webpack/lib/ParserHelpers';
+let ParserHelpers;
+try {
+  ParserHelpers = require('webpack/lib/javascript/JavascriptParserHelpers'); // Webpack 5
+} catch (e) {
+  console.warn('Could not find Webpack 5 path', e);
+}
+ParserHelpers = ParserHelpers || require('webpack/lib/ParserHelpers'); // Webpack 4
 let HarmonyImportSpecifierDependency;
 try {
   HarmonyImportSpecifierDependency = require('webpack/lib/dependencies/HarmonyImportSpecifierDependency');
