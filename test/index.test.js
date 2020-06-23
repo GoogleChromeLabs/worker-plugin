@@ -140,6 +140,58 @@ describe('worker-plugin', () => {
     expect(stats.assets['main.js']).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"foo\.[a-zA-Z0-9]+\.worker\.js"/g);
   });
 
+  describe('options.filename / options.chunkFilename', () => {
+    test('it uses the provided filename when specified', async () => {
+      const stats = await runWebpack('named', {
+        plugins: [
+          new WorkerPlugin({
+            filename: 'my-custom-name.[hash:3].js'
+          })
+        ]
+      });
+
+      const assetNames = Object.keys(stats.assets);
+      expect(assetNames).toHaveLength(2);
+      expect(assetNames).toContainEqual(expect.stringMatching(/^my-custom-name\.[a-zA-Z0-9]{3}\.js$/));
+      expect(stats.assets['main.js']).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"my-custom-name\.[a-zA-Z0-9]{3}\.js"/g);
+    });
+
+    test('it supports [name] in filename templates', async () => {
+      const stats = await runWebpack('named', {
+        plugins: [
+          new WorkerPlugin({
+            filename: '[name]_worker.js'
+          })
+        ]
+      });
+
+      const assetNames = Object.keys(stats.assets);
+      expect(assetNames).toHaveLength(2);
+      expect(assetNames).toContainEqual(expect.stringMatching(/^foo_worker\.js$/));
+      expect(stats.assets['main.js']).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"foo_worker\.js"/g);
+    });
+
+    test('it supports custom chunkFilename templates when code-splitting', async () => {
+      const stats = await runWebpack('code-splitting', {
+        output: {
+          publicPath: '/dist/'
+        },
+        plugins: [
+          new WorkerPlugin({
+            filename: 'worker.js',
+            chunkFilename: '[id]_worker_chunk.js'
+          })
+        ]
+      });
+
+      const assetNames = Object.keys(stats.assets);
+      expect(assetNames).toHaveLength(3);
+      expect(assetNames).toContainEqual(expect.stringMatching(/^worker\.js$/));
+      expect(assetNames).toContainEqual(expect.stringMatching(/^1_worker_chunk\.js$/));
+      expect(stats.assets['main.js']).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"worker\.js"/g);
+    });
+  });
+
   test('it bundles WASM file which imported dynamically', async () => {
     const stats = await runWebpack('wasm', {
       plugins: [
