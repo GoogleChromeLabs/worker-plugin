@@ -1,6 +1,5 @@
 language: node_js
-node_js:
-  - stable
+node_js: 12
 dist: trusty
 sudo: false
 addons:
