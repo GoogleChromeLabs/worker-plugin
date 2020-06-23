@@ -30,7 +30,7 @@ export function pitch (request) {
   const compilerOptions = this._compiler.options || {};
 
   const plugin = compilerOptions.plugins.find(p => p[WORKER_PLUGIN_SYMBOL]) || {};
-  const pluginOptions = plugin && plugin.options || {};
+  const pluginOptions = (plugin && plugin.options) || {};
 
   if (pluginOptions.globalObject == null && !hasWarned && compilerOptions.output && compilerOptions.output.globalObject === 'window') {
     hasWarned = true;
@@ -39,10 +39,10 @@ export function pitch (request) {
 
   const options = loaderUtils.getOptions(this) || {};
   const chunkName = options.name || 'worker';
-  const chunkFilename = pluginOptions.chunkFilename || compilerOptions.output.chunkFilename;
+  const chunkFilename = compilerOptions.output.chunkFilename.replace(/\.([a-z]+)(\?.+)?$/i, '.worker.$1$2');
   const workerOptions = {
-    filename: chunkFilename.replace(/\[(?:chunkhash|contenthash)(:\d+(?::\d+)?)?\]/g, '[hash$1]'),
-    chunkFilename,
+    filename: (options.filename || pluginOptions.filename || chunkFilename).replace(/\[(?:chunkhash|contenthash)(:\d+(?::\d+)?)?\]/g, '[hash$1]'),
+    chunkFilename: options.chunkFilename || pluginOptions.chunkFilename || chunkFilename,
     globalObject: pluginOptions.globalObject || 'self'
   };
 
@@ -59,7 +59,7 @@ export function pitch (request) {
 
   const workerCompiler = this._compilation.createChildCompiler(NAME, workerOptions, plugins);
   workerCompiler.context = this._compiler.context;
-  (new WebWorkerTemplatePlugin(workerOptions)).apply(workerCompiler);
+  (new WebWorkerTemplatePlugin()).apply(workerCompiler);
   (new FetchCompileWasmTemplatePlugin({
     mangleImports: compilerOptions.optimization.mangleWasmImports
   })).apply(workerCompiler);

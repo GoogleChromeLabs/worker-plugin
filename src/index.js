@@ -16,7 +16,11 @@
 
 import path from 'path';
 import WORKER_PLUGIN_SYMBOL from './symbol';
-import ParserHelpers from 'webpack/lib/ParserHelpers';
+let ParserHelpers;
+try {
+  ParserHelpers = require('webpack/lib/javascript/JavascriptParserHelpers'); // Webpack 5
+} catch (e) {}
+ParserHelpers = ParserHelpers || require('webpack/lib/ParserHelpers'); // Webpack 4
 let HarmonyImportSpecifierDependency;
 try {
   HarmonyImportSpecifierDependency = require('webpack/lib/dependencies/HarmonyImportSpecifierDependency');
@@ -42,13 +46,6 @@ export default class WorkerPlugin {
         const handleWorker = workerTypeString => expr => {
           const dep = parser.evaluateExpression(expr.arguments[0]);
 
-          if (!dep.isString()) {
-            parser.state.module.warnings.push({
-              message: `new ${workerTypeString}() will only be bundled if passed a String.`
-            });
-            return false;
-          }
-
           const optsExpr = expr.arguments[1];
           let hasInitOptions = false;
           let typeModuleExpr;
@@ -70,8 +67,18 @@ export default class WorkerPlugin {
           }
 
           if (!opts || opts.type !== 'module') {
+            // If an unknown type value is passed, it's probably an error and we can warn the developer:
+            if (opts && opts.type !== 'classic') {
+              parser.state.module.warnings.push({
+                message: `new ${workerTypeString}() will only be bundled if passed options that include { type: 'module' }.${opts ? `\n  Received: new ${workerTypeString}()(${JSON.stringify(dep.string)}, ${JSON.stringify(opts)})` : ''}`
+              });
+            }
+            return false;
+          }
+
+          if (!dep.isString()) {
             parser.state.module.warnings.push({
-              message: `new ${workerTypeString}() will only be bundled if passed options that include { type: 'module' }.${opts ? `\n  Received: new ${workerTypeString}()(${JSON.stringify(dep.string)}, ${JSON.stringify(opts)})` : ''}`
+              message: `new ${workerTypeString}("..", { type: "module" }) will only be bundled if passed a String.`
             });
             return false;
           }
@@ -123,8 +130,8 @@ export default class WorkerPlugin {
               // there might be other options - to avoid trailing comma issues, replace the type value with undefined but *leave the key*:
               ParserHelpers.toConstantDependency(parser, 'type:undefined')(typeModuleExpr);
             } else {
-              // there was only a `{type}` option, so we can remove the whole second argument:
-              ParserHelpers.toConstantDependency(parser, '')(optsExpr);
+              // there was only a `{type}` option, we replace the opts argument with undefined to avoid trailing comma issues:
+              ParserHelpers.toConstantDependency(parser, 'undefined')(optsExpr);
             }
           }
 
