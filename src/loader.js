@@ -30,7 +30,7 @@ export function pitch (request) {
   const compilerOptions = this._compiler.options || {};
 
   const plugin = compilerOptions.plugins.find(p => p[WORKER_PLUGIN_SYMBOL]) || {};
-  const pluginOptions = plugin && plugin.options || {};
+  const pluginOptions = (plugin && plugin.options) || {};
 
   if (pluginOptions.globalObject == null && !hasWarned && compilerOptions.output && compilerOptions.output.globalObject === 'window') {
     hasWarned = true;
@@ -58,7 +58,7 @@ export function pitch (request) {
 
   const workerCompiler = this._compilation.createChildCompiler(NAME, workerOptions, plugins);
   workerCompiler.context = this._compiler.context;
-  (new WebWorkerTemplatePlugin(workerOptions)).apply(workerCompiler);
+  (new WebWorkerTemplatePlugin()).apply(workerCompiler);
   (new FetchCompileWasmTemplatePlugin({
     mangleImports: compilerOptions.optimization.mangleWasmImports
   })).apply(workerCompiler);

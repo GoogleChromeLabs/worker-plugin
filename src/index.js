@@ -68,7 +68,7 @@ export default class WorkerPlugin {
 
           if (!opts || opts.type !== 'module') {
             // If an unknown type value is passed, it's probably an error and we can warn the developer:
-            if (opts.type !== 'classic') {
+            if (opts && opts.type !== 'classic') {
               parser.state.module.warnings.push({
                 message: `new ${workerTypeString}() will only be bundled if passed options that include { type: 'module' }.${opts ? `\n  Received: new ${workerTypeString}()(${JSON.stringify(dep.string)}, ${JSON.stringify(opts)})` : ''}`
               });
