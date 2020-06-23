@@ -46,13 +46,6 @@ export default class WorkerPlugin {
         const handleWorker = workerTypeString => expr => {
           const dep = parser.evaluateExpression(expr.arguments[0]);
 
-          if (!dep.isString()) {
-            parser.state.module.warnings.push({
-              message: `new ${workerTypeString}() will only be bundled if passed a String.`
-            });
-            return false;
-          }
-
           const optsExpr = expr.arguments[1];
           let hasInitOptions = false;
           let typeModuleExpr;
@@ -74,8 +67,18 @@ export default class WorkerPlugin {
           }
 
           if (!opts || opts.type !== 'module') {
+            // If an unknown type value is passed, it's probably an error and we can warn the developer:
+            if (opts.type !== 'classic') {
+              parser.state.module.warnings.push({
+                message: `new ${workerTypeString}() will only be bundled if passed options that include { type: 'module' }.${opts ? `\n  Received: new ${workerTypeString}()(${JSON.stringify(dep.string)}, ${JSON.stringify(opts)})` : ''}`
+              });
+            }
+            return false;
+          }
+
+          if (!dep.isString()) {
             parser.state.module.warnings.push({
-              message: `new ${workerTypeString}() will only be bundled if passed options that include { type: 'module' }.${opts ? `\n  Received: new ${workerTypeString}()(${JSON.stringify(dep.string)}, ${JSON.stringify(opts)})` : ''}`
+              message: `new ${workerTypeString}("..", { type: "module" }) will only be bundled if passed a String.`
             });
             return false;
           }
