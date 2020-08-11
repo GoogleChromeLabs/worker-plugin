@@ -276,7 +276,7 @@ describe('worker-plugin', () => {
     const stats = await runWebpack('no-trailing-comma', {
       plugins: [
         new WorkerPlugin()
-      ],
+      ]
     });
 
     const assetNames = Object.keys(stats.assets);
@@ -294,7 +294,7 @@ describe('worker-plugin', () => {
     expect(main).toMatch(/new Worker\s*\(__webpack__worker__\d, void 0\)/);
 
     // Match `new Worker(__webpack__worker__0, { type: void 0, name: "foo" })`
-    expect(main).toMatch(/new Worker\s*\(__webpack__worker__\d, {\s*type\: void 0,\s*name\: "foo"\s*}\)/);
+    expect(main).toMatch(/new Worker\s*\(__webpack__worker__\d, {\s*type: void 0,\s*name: "foo"\s*}\)/);
   });
 
   describe('worker-plugin/loader', () => {
@@ -335,17 +335,17 @@ describe('worker-plugin', () => {
         ]
       });
 
+      /** @returns {Partial<Promise & { resolve(v): void, reject(e): void }>} */
       function Deferred () {
-        let controller;
-        const p = new Promise((resolve, reject) => {
-          controller = { resolve, reject };
-        });
-        Object.assign(p, controller);
-        return p;
+        const controller = {};
+        return Object.assign(new Promise((resolve, reject) => {
+          controller.resolve = resolve;
+          controller.reject = reject;
+        }), controller);
       }
 
       let stats;
-      let ready = new Deferred();
+      let ready = Deferred();
 
       const watcher = compiler.watch({
         aggregateTimeout: 1,
@@ -358,7 +358,7 @@ describe('worker-plugin', () => {
 
       try {
         for (let i = 1; i < 5; i++) {
-          ready = new Deferred();
+          ready = Deferred();
           writeFileSync(workerFile, workerCode.replace(/console\.log\('hello from worker( \d+)?'\)/, `console.log('hello from worker ${i}')`));
           await sleep(1000);
           stats = await ready;
@@ -367,7 +367,7 @@ describe('worker-plugin', () => {
           expect(stats.assets['0.worker.js']).toContain(`hello from worker ${i}`);
         }
       } finally {
-        watcher.close();
+        watcher.close(() => {});
       }
 
       await sleep(1000);

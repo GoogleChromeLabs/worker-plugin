@@ -23,6 +23,10 @@ export function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+/**
+ * @param {string} fixture
+ * @param {{ terserOptions?: import('terser').MinifyOptions } & Partial<import('webpack').Configuration>} [options]
+ */
 export function runWebpack (fixture, { output, plugins, terserOptions, ...config } = {}) {
   return run(callback => webpack({
     mode: 'production',
@@ -50,14 +54,20 @@ export function runWebpack (fixture, { output, plugins, terserOptions, ...config
     plugins: [
       new CleanPlugin([
         path.resolve(__dirname, 'fixtures', fixture, 'dist', '**')
-      ])
-    ].concat(plugins || []),
+      ], {}),
+      ...(Array.isArray(plugins) ? plugins : [])
+    ],
     ...config
   }, callback));
 }
 
+/**
+ * @param {string} fixture
+ * @param {Partial<import('webpack').Configuration & { terserOptions?: import('terser').MinifyOptions }>} [options]
+ */
 export function watchWebpack (fixture, { output, plugins, context, terserOptions, ...config } = {}) {
   context = context || path.resolve(__dirname, 'fixtures', fixture);
+  /** @type {Partial<import('webpack').Compiler & { doRun(): Promise<import('webpack').Stats> }>} */
   const compiler = webpack({
     mode: 'production',
     context,
