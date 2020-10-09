@@ -19,6 +19,9 @@ The best part? That worker constructor works just fine without bundling turned o
 
 Workers with fully dynamic URLs, Blob URLs, data URLs or with no `{ type:'module' }` option are left unchanged.
 
+> _**Compatibility Note:** Webpack 5 now includes worker bundling. It uses a slightly different syntax:_<br>
+> _`new Worker(new URL("./my_worker.js", import.meta.url))`_
+
 ## Installation
 
 ```sh
