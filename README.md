@@ -149,7 +149,7 @@ To instead retain `{type:'module'}` in bundled output, set the `preserveTypeModu
   ]
 ```
 
-Similarly, if you need to have WorkerPlugin output a specific `type` value, use the `workerType` option to spefify it:
+Similarly, if you need to have WorkerPlugin output a specific `type` value, use the `workerType` option to specify it:
 
 ```js
   plugins: [
