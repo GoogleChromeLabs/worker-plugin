@@ -50,7 +50,7 @@ export default class WorkerPlugin {
           let hasInitOptions = false;
           let typeModuleExpr;
           let opts;
-          if (optsExpr) {
+          if (optsExpr && optsExpr.properties) {
             opts = {};
             for (let i = optsExpr.properties.length; i--;) {
               const prop = optsExpr.properties[i];
