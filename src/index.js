@@ -86,7 +86,8 @@ export default class WorkerPlugin {
           const isStrictModule = esModule || (parser.state.buildMeta && parser.state.buildMeta.strictHarmonyModule);
 
           // Querystring-encoded loader prefix (faster/cleaner than JSON parameters):
-          const loaderRequest = `${workerLoader}?name=${encodeURIComponent(opts.name || workerId)}${isStrictModule ? '&esModule' : ''}!${dep.string}`;
+          const workerName = `${opts.name || workerId}.worker`;
+          const loaderRequest = `${workerLoader}?name=${encodeURIComponent(workerName)}${isStrictModule ? '&esModule' : ''}!${dep.string}`;
 
           // Unique ID for the worker URL variable:
           const id = `__webpack__worker__${workerId++}`;

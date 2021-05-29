@@ -136,8 +136,8 @@ describe('worker-plugin', () => {
 
     const assetNames = Object.keys(stats.assets);
     expect(assetNames).toHaveLength(2);
-    expect(assetNames).toContainEqual(expect.stringMatching(/^foo\.[a-zA-Z0-9]+\.worker\.js$/));
-    expect(stats.assets['main.js']).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"foo\.[a-zA-Z0-9]+\.worker\.js"/g);
+    expect(assetNames).toContainEqual(expect.stringMatching(/^foo\.worker\.[a-zA-Z0-9]+\.js$/));
+    expect(stats.assets['main.js']).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"foo\.worker\.[a-zA-Z0-9]+\.js"/g);
   });
 
   describe('options.filename / options.chunkFilename', () => {
@@ -309,7 +309,7 @@ describe('worker-plugin', () => {
 
       const assetNames = Object.keys(stats.assets);
       expect(assetNames).toHaveLength(2);
-      expect(assetNames).toContainEqual('0.worker.js');
+      expect(assetNames).toContainEqual('worker.js');
 
       const main = stats.assets['main.js'];
       expect(main).toMatch(/[^\n]*console.log\s*\([^)]*\)[^\n]*/g);
@@ -317,7 +317,7 @@ describe('worker-plugin', () => {
       const log = main.match(/\bconsole\.log\s*\(([^)]*)\)[^\n]*/)[1];
       expect(log).toMatch(/worker_plugin_loader_worker__WEBPACK_IMPORTED_MODULE_\d___default.[a-z0-9]+/gi);
 
-      expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"0\.worker\.js"/g);
+      expect(main).toMatch(/module.exports = __webpack_require__\.p\s*\+\s*"worker\.js"/g);
     });
   });
 

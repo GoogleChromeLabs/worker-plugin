@@ -159,6 +159,12 @@ Similarly, if you need to have WorkerPlugin output a specific `type` value, use 
   ]
 ```
 
+### `chunkFilename` _(string)_
+
+By default this plugin will output assets according to parent `output.chunkFilename` setting (with chunk `[name]` being `WORKERNAME.worker`).
+
+If you want another pattern (e.g. constant, no hash) for your workers, you may override this default behavior with a pattern of your choosing.
+
 ## Loader
 
 At its core, worker-plugin provides two features: parsing and handling of `new Worker()`, and standalone bundling of modules for use in a different JavaScript context.
@@ -168,7 +174,7 @@ If all you want is to compile separate bundles for a module, `worker-plugin/load
 ```js
 import workerUrl from 'worker-plugin/loader!./my-worker';
 
-console.log(workerUrl); // "/0.worker.js"
+console.log(workerUrl); // "/worker.js"
 
 CSS.paintWorklet.addModule(workerUrl);
 ```
@@ -183,7 +189,7 @@ Two options are available:
 Options can be supplied inline:
 
 ```js
-import url from 'worker-plugin/loader?name=foo&esModule!./foo';
+import url from 'worker-plugin/loader?name=foo&esModule!./foo'; // "/foo.worker.js"
 ```
 
 ... or by setting up a loader alias:

@@ -43,6 +43,7 @@ export function pitch (request) {
   }
 
   const options = loaderUtils.getOptions(this) || {};
+  const chunkName = options.name || 'worker';
   const chunkFilename = compilerOptions.output.chunkFilename.replace(/\.([a-z]+)(\?.+)?$/i, '.worker.$1$2');
   const workerOptions = {
     filename: (options.filename || pluginOptions.filename || chunkFilename).replace(/\[(?:chunkhash|contenthash)(:\d+(?::\d+)?)?\]/g, '[hash$1]'),
@@ -67,7 +68,7 @@ export function pitch (request) {
   (new FetchCompileWasmPlugin({
     mangleImports: compilerOptions.optimization.mangleWasmImports
   })).apply(workerCompiler);
-  (new SingleEntryPlugin(this.context, request, options.name)).apply(workerCompiler);
+  (new SingleEntryPlugin(this.context, request, chunkName)).apply(workerCompiler);
 
   const subCache = `subcache ${__dirname} ${request}`;
   workerCompiler.hooks.compilation.tap(NAME, compilation => {
